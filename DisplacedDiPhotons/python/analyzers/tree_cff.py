@@ -19,7 +19,6 @@ vhGGTreeProducer = cfg.Analyzer(
      },
 
      collections = {
-         "Z" : NTupleCollection("Z", LeptonType, 5, help = "Z candidates"),
         "ZX" : NTupleCollection("ZX",ZXType ,5, help="ZX candidates"),
         "WX" : NTupleCollection("WX",WXType ,5, help="WX candidates"),
         "ZXX": NTupleCollection("ZXX", ZXXType, 5, help = "ZXX candidates"),

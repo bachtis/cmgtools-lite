@@ -22,8 +22,6 @@ XType = NTupleObjectType("PhotonPair", baseObjectTypes=[fourVectorType], variabl
     NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
     NTupleSubObject("g1",  lambda x : x.leg1,photonType),
     NTupleSubObject("g2",  lambda x : x.leg2,photonType),    
-#    NTupleSubObject("conv1", lambda x: x.conv1, conversionType),
-#    NTupleSubObject("conv2", lambda x: x.conv2, conversionType),
 ])
 
 WType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
@@ -43,23 +41,28 @@ ZXType = NTupleObjectType("ZXType", baseObjectTypes=[], variables = [
 XXType = NTupleObjectType("XXType", baseObjectTypes=[], variables = [
     NTupleSubObject("X1", lambda x : x.x1, XType),
     NTupleSubObject("X2", lambda x : x.x2, XType),
-    NTupleVariable("m13", lambda x: x.m13, float),
-    NTupleVariable("m24", lambda x: x.m24, float),
-    NTupleVariable("m14", lambda x: x.m14, float),
-    NTupleVariable("m23", lambda x: x.m23, float),
+    NTupleVariable("m12", lambda x: x.m12(), float),
+    NTupleVariable("m13", lambda x: x.m13(), float),
+    NTupleVariable("m14", lambda x: x.m14(), float),
+    NTupleVariable("m23", lambda x: x.m23(), float),
+    NTupleVariable("m24", lambda x: x.m24(), float),
+    NTupleVariable("m34", lambda x: x.m34(), float),
 ])
 
 WXType = NTupleObjectType("WXType", baseObjectTypes=[], variables = [
     NTupleSubObject("W",  lambda x : x.leg1,WType),
     NTupleSubObject("X",  lambda x : x.leg2,XType),
+    NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
 
 ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z", lambda x: x.Z, ZType),
-    NTupleSubObject("XX", lambda x: x.XX, XXType)
+    NTupleSubObject("XX", lambda x: x.XX, XXType),
+    NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
 
 WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("W", lambda x: x.W, WType),
-    NTupleSubObject("XX", lambda x: x.XX, XXType)
+    NTupleSubObject("XX", lambda x: x.XX, XXType),
+    NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
