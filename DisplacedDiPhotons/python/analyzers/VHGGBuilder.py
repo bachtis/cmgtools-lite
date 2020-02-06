@@ -74,38 +74,38 @@ class VHGGBuilder(Analyzer):
         return XXs
 
     def checkFSR_ZX(self, Z,X):
-        flag = False
+        flag = 0
         mz = Z.p4().mass()
         for g in [X.leg1, X.leg2]:
-            p4New = Z.p4() + g.pt()
+            p4New = Z.p4() + g.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
-                flag = True
+                flag = 1
 
         p4Total = Z.p4() + X.p4()
         if abs(p4Total.mass()-91) < abs(mz-91):
-            flag = True
+            flag = 1
 
         return flag
 
     def checkFSR_ZXX(self, Z,XX):
-        flag = False
+        flag = 0
         mz = Z.p4().mass()
         for g in [XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2]:
-            p4New = Z.p4() + g.p4()
+            p4New = Z.p4() + g.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
-                flag =  True
+                flag =  1
         for g1, g2 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],2):
-            p4New = Z.p4() + g1.p4() + g2.p4()
+            p4New = Z.p4() + g1.p4(2) + g2.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
-                flag = True
+                flag = 1
         for g1, g2, g3 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],3):
-            p4New = Z4.p4() + g1.p4() + g2.p4() + g3.p4()
+            p4New = Z4.p4() + g1.p4(2) + g2.p4(2) + g3.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
-                flag = True
+                flag = 1
         for g1, g2, g3, g4 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],4):
-            p4New = Z4.p4() + g1.p4() + g2.p4() + g3.p4() + g4.p4()
+            p4New = Z4.p4() + g1.p4(2) + g2.p4() + g3.p4(2) + g4.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
-                flag = True
+                flag = 1
 
         return flag
 
@@ -147,7 +147,9 @@ class VHGGBuilder(Analyzer):
                 bestX = max(goodXs,key=lambda x: x.leg1.pt()+x.leg2.pt())
                 bestZX = Pair(bestZ,bestX)
                 bestZX.otherLeptons = len(goodLeptons)-2
-                bestZX.fsrFlag = self.checkFSR_ZX(bestZ, bestX)
+                bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
+                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg1.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg1.phi())))
+                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg2.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg2.phi())))
                 event.ZX.append(bestZX)
                 nZPairs+=1
 
@@ -168,7 +170,7 @@ class VHGGBuilder(Analyzer):
                 bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
                 bestZXX = ZXX(bestZ, bestXX)
                 bestZXX.otherLeptons = len(goodLeptons) - 2
-                bestZXX.fsrFlag = self.checkFSR_ZXX(bestZ, bestXX)
+                bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
                 event.ZXX.append(bestZXX)
                 nZPairs+=1
 

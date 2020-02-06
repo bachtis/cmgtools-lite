@@ -39,14 +39,6 @@ class PhotonPair(object):
     def deltaR(self):
         return abs(deltaR(self.leg1.eta(),self.leg1.phi(),self.leg2.eta(),self.leg2.phi()))
 
-    # Delta Phi of g1 to closest lepton from Z
-    def deltaPhi_g1(self):
-        return min(abs(deltaPhi(self.leg1.leg1.phi(), self.leg2.leg1.phi())), abs(deltaPhi(self.leg1.leg2.phi(), self.leg2.leg1.phi())))
-
-    # Delta Phi of g2 to closest lepton from Z
-    def deltaPhi_g2(self):
-        return min(abs(deltaPhi(self.leg1.leg1.phi(), self.leg2.leg2.phi())), abs(deltaPhi(self.leg1.leg2.phi(), self.leg2.leg2.phi())))
-
     def __getattr__(self, name):
         return getattr(self.LV,name)
                        

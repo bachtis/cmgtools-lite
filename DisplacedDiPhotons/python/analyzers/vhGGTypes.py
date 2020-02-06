@@ -37,10 +37,13 @@ WType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables
 ZXType = NTupleObjectType("ZXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z",  lambda x : x.leg1,ZType),
     NTupleSubObject("X",  lambda x : x.leg2,XType),
+    NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1, float),
+    NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
+    NTupleVariable("mass", lambda x: x.m(), float),
+    NTupleVariable("mass_Zg1", lambda x: (x.leg1.p4()+x.leg2.leg1.p4(2)).mass(), float),
+    NTupleVariable("mass_Zg2", lambda x: (x.leg1.p4()+x.leg2.leg2.p4(2)).mass(), float),
+    NTupleVariable("hasFSR", lambda x: x.hasFSR, int),
     NTupleVariable("otherLeptons",   lambda x : x.otherLeptons, int),          
-    NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1(), float),
-    NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2(), float),
-    NTupleVariable("FLAG_fsr", lambda x: x.fsrFlag, bool),
 ])
 
 XXType = NTupleObjectType("XXType", baseObjectTypes=[], variables = [
@@ -64,7 +67,7 @@ ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z", lambda x: x.Z, ZType),
     NTupleSubObject("XX", lambda x: x.XX, XXType),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
-    NTupleVariable("FLAG_fsr", lambda x: x.fsrFlag, bool),
+    NTupleVariable("hasFSR", lambda x: x.hasFSR, int),
 ])
 
 WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [
