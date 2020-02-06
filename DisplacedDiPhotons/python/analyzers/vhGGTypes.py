@@ -38,6 +38,8 @@ ZXType = NTupleObjectType("ZXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z",  lambda x : x.leg1,ZType),
     NTupleSubObject("X",  lambda x : x.leg2,XType),
     NTupleVariable("otherLeptons",   lambda x : x.otherLeptons, int),          
+    NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1(), float),
+    NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2(), float),
     NTupleVariable("FLAG_fsr", lambda x: x.fsrFlag, bool),
 ])
 
