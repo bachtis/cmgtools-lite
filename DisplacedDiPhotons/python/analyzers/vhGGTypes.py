@@ -13,6 +13,7 @@ conversionType = NTupleObjectType("conversion",baseObjectTypes = [], variables =
 ZType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
     NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
     NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
+    NTupleVariable("mt", lambda x: x.mt(), float),
     NTupleSubObject("l1",  lambda x : x.leg1,leptonType),
     NTupleSubObject("l2",  lambda x : x.leg2,leptonType),    
 ])
@@ -26,7 +27,8 @@ XType = NTupleObjectType("PhotonPair", baseObjectTypes=[fourVectorType], variabl
 
 WType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
     NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
-    NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
+    NTupleVariable("deltaR",   lambda x : x.deltaR(), float),
+    NTupleVariable("mt", lambda x: x.mt(), float),
     NTupleSubObject("l1",  lambda x : x.leg1,leptonType),
     NTupleSubObject("l2",  lambda x : x.leg2,metType),    
 ])
