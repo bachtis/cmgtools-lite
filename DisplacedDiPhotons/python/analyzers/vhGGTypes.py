@@ -36,6 +36,7 @@ ZXType = NTupleObjectType("ZXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z",  lambda x : x.leg1,ZType),
     NTupleSubObject("X",  lambda x : x.leg2,XType),
     NTupleVariable("otherLeptons",   lambda x : x.otherLeptons, int),          
+    NTupleVariable("FLAG_fsr", lambda x: x.fsrFlag, bool),
 ])
 
 XXType = NTupleObjectType("XXType", baseObjectTypes=[], variables = [
@@ -59,6 +60,7 @@ ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("Z", lambda x: x.Z, ZType),
     NTupleSubObject("XX", lambda x: x.XX, XXType),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
+    NTupleVariable("FLAG_fsr", lambda x: x.fsrFlag, bool),
 ])
 
 WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [

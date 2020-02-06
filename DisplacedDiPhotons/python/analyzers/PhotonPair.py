@@ -11,8 +11,8 @@ class PhotonPair(object):
         self.LV = leg1.p4(2)+leg2.p4(2)
         et1 = math.sqrt(leg1.mass()*leg1.mass()+leg1.pt()*leg1.pt())
         et2 = math.sqrt(leg2.mass()*leg2.mass()+leg2.pt()*leg2.pt())
-#        self.MT  =math.sqrt(self.leg1.p4(2).mass()*self.leg1.p4(2).mass()+\
-#                            self.leg2.p4(2).mass()*self.leg2.p4(2).mass()+2*(et1*et2-self.leg1.p4(2).px()*self.leg2.p4(2).px()-self.leg1.p4(2).py()*self.leg2.p4(2).py()))
+        self.MT2  =self.leg1.p4(2).mass()*self.leg1.p4(2).mass()+\
+                            self.leg2.p4(2).mass()*self.leg2.p4(2).mass()+2*(et1*et2-self.leg1.p4(2).px()*self.leg2.p4(2).px()-self.leg1.p4(2).py()*self.leg2.p4(2).py())
         
 
     def rawP4(self):
@@ -27,8 +27,8 @@ class PhotonPair(object):
     def pdgId(self):
         return self.pdg
    
-#    def mt2(self):
-#        return self.MT*self.MT
+    def mt2(self):
+        return self.MT2
 
 #    def mt(self):
 #        return self.MT
