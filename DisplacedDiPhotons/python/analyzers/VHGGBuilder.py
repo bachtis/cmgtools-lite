@@ -35,6 +35,9 @@ class VHGGBuilder(Analyzer):
         for l1,l2 in itertools.combinations(leptons,2):
             if (l1.charge()+l2.charge())!=0:
                 continue
+            # Did this need to be added? Wasn't in and couldn't find any instances where it wasn't true
+#            if l1.pdgId()+l2.pdgId()!=0:
+#                continue
             Z = Pair(l1,l2,23)
             mass = Z.p4().mass()
             if mass<50 or mass>140:
@@ -103,7 +106,7 @@ class VHGGBuilder(Analyzer):
             if abs(p4New.mass()-91) < abs(mz-91):
                 flag = 1
         for g1, g2, g3, g4 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],4):
-            p4New = Z.p4() + g1.p4(2) + g2.p4() + g3.p4(2) + g4.p4(2)
+            p4New = Z.p4() + g1.p4(2) + g2.p4(2) + g3.p4(2) + g4.p4(2)
             if abs(p4New.mass()-91) < abs(mz-91):
                 flag = 1
 
@@ -193,6 +196,8 @@ class VHGGBuilder(Analyzer):
                 bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
                 bestWX = Pair(bestW, bestX)
                 bestWX.otherLeptons = len(goodLeptons) -1
+                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(),bestX.leg1.phi())
+                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(),bestX.leg2.phi())
                 event.WX.append(bestWX)
 
             goodXXs = []
@@ -210,4 +215,8 @@ class VHGGBuilder(Analyzer):
                 bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
                 bestWXX = WXX(bestW, bestXX)
                 bestWXX.otherLeptons = len(goodLeptons) - 1
+                bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
+                bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
+                bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
+                bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
                 event.WXX.append(bestWXX)

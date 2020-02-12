@@ -60,6 +60,8 @@ XXType = NTupleObjectType("XXType", baseObjectTypes=[], variables = [
 WXType = NTupleObjectType("WXType", baseObjectTypes=[], variables = [
     NTupleSubObject("W",  lambda x : x.leg1,WType),
     NTupleSubObject("X",  lambda x : x.leg2,XType),
+    NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1, float),
+    NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
 
@@ -73,5 +75,9 @@ ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
 WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("W", lambda x: x.W, WType),
     NTupleSubObject("XX", lambda x: x.XX, XXType),
+    NTupleSubObject("deltaPhi_X1_g1", lambda x: x.deltaPhi_X1_g1, float),
+    NTupleSubObject("deltaPhi_X1_g2", lambda x: x.deltaPhi_X1_g1, float),
+    NTupleSubObject("deltaPhi_X2_g1", lambda x: x.deltaPhi_X1_g1, float),
+    NTupleSubObject("deltaPhi_X2_g2", lambda x: x.deltaPhi_X1_g1, float),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
