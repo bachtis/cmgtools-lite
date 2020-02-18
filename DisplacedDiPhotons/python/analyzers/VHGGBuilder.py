@@ -85,7 +85,7 @@ class VHGGBuilder(Analyzer):
                 flag = 1
 
         p4Total = Z.p4() + X.p4()
-        if abs(p4Total.mass()-91) < abs(mz-91):
+        if abs(p4Total.mass()-91) < abs(mz-91) and abs(mz-91) < 5:
             flag = 1
 
         return flag
@@ -95,19 +95,19 @@ class VHGGBuilder(Analyzer):
         mz = Z.p4().mass()
         for g in [XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2]:
             p4New = Z.p4() + g.p4(2)
-            if abs(p4New.mass()-91) < abs(mz-91):
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(mz-91) < 5:
                 flag =  1
         for g1, g2 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],2):
             p4New = Z.p4() + g1.p4(2) + g2.p4(2)
-            if abs(p4New.mass()-91) < abs(mz-91):
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(mz-91) < 5:
                 flag = 1
         for g1, g2, g3 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],3):
             p4New = Z.p4() + g1.p4(2) + g2.p4(2) + g3.p4(2)
-            if abs(p4New.mass()-91) < abs(mz-91):
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(mz-91) < 5:
                 flag = 1
         for g1, g2, g3, g4 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],4):
             p4New = Z.p4() + g1.p4(2) + g2.p4(2) + g3.p4(2) + g4.p4(2)
-            if abs(p4New.mass()-91) < abs(mz-91):
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(mz-91) < 5:
                 flag = 1
 
         return flag
