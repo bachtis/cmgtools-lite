@@ -87,8 +87,8 @@ from CMGTools.DisplacedDiPhotons.analyzers.core_cff import *
 from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
 
 
-#selectedComponents = mcSamples
-selectedComponents = dataSamples
+selectedComponents = mcSamples
+#selectedComponents = dataSamples
 
 
 
