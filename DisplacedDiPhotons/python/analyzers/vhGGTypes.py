@@ -10,6 +10,15 @@ conversionType = NTupleObjectType("conversion",baseObjectTypes = [], variables =
 ])
 
 
+displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables = [
+    NTupleVariable("vx", lambda x: x.getVertex()[0][0], float),
+    NTupleVariable("vy", lambda x: x.getVertex()[0][1], float),
+    NTupleVariable("vz", lambda x: x.getVertex()[0][2], float),
+    NTupleVariable("theta", lambda x: x.getPhi(), float),
+    NTupleVariable("pt", lambda x: x.getVertex()[1], float),
+])
+
+
 ZType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
     NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
     NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
@@ -22,7 +31,13 @@ XType = NTupleObjectType("PhotonPair", baseObjectTypes=[fourVectorType], variabl
     NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
     NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
     NTupleSubObject("g1",  lambda x : x.leg1,photonType),
-    NTupleSubObject("g2",  lambda x : x.leg2,photonType),    
+    NTupleSubObject("g2",  lambda x : x.leg2,photonType),
+    NTupleSubObject("vertex10", lambda x: x.vertex(10), displacementType),
+#    NTupleSubObject("vertex20", lambda x: x.vertex(20), displacementType),
+#    NTupleSubObject("vertex30", lambda x: x.vertex(30), displacementType),
+#    NTupleSubObject("vertex40", lambda x: x.vertex(40), displacementType),
+#    NTupleSubObject("vertex50", lambda x: x.vertex(50), displacementType),
+#    NTupleSubObject("vertex60", lambda x: x.vertex(60), displacementType),
 ])
 
 WType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
@@ -75,9 +90,9 @@ ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
 WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [
     NTupleSubObject("W", lambda x: x.W, WType),
     NTupleSubObject("XX", lambda x: x.XX, XXType),
-    NTupleSubObject("deltaPhi_X1_g1", lambda x: x.deltaPhi_X1_g1, float),
-    NTupleSubObject("deltaPhi_X1_g2", lambda x: x.deltaPhi_X1_g1, float),
-    NTupleSubObject("deltaPhi_X2_g1", lambda x: x.deltaPhi_X1_g1, float),
-    NTupleSubObject("deltaPhi_X2_g2", lambda x: x.deltaPhi_X1_g1, float),
+    NTupleVariable("deltaPhi_X1_g1", lambda x: x.deltaPhi_X1_g1, float),
+    NTupleVariable("deltaPhi_X1_g2", lambda x: x.deltaPhi_X1_g2, float),
+    NTupleVariable("deltaPhi_X2_g1", lambda x: x.deltaPhi_X2_g1, float),
+    NTupleVariable("deltaPhi_X2_g2", lambda x: x.deltaPhi_X2_g2, float),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])

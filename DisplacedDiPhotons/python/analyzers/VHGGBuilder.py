@@ -11,6 +11,9 @@ import  itertools
 from CMGTools.VVResonances.tools.Pair import *
 from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
+from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
+
+from sympy import Symbol, nsolve
 
 class VHGGBuilder(Analyzer):
 
@@ -112,6 +115,7 @@ class VHGGBuilder(Analyzer):
 
         return flag
 
+
     def process(self, event):
         self.readCollections(event.input)
 
@@ -126,7 +130,6 @@ class VHGGBuilder(Analyzer):
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
         XXs = self.makeXPair(goodPhotons)
-
 
         # Make ZX/ZXX Pairs first
         nZPairs = 0

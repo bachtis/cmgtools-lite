@@ -1,7 +1,7 @@
 import math
-
+import ROOT
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
-
+from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
 class PhotonPair(object):
     def __init__(self,leg1,leg2,pdg = 0):
@@ -38,6 +38,15 @@ class PhotonPair(object):
 
     def deltaR(self):
         return abs(deltaR(self.leg1.eta(),self.leg1.phi(),self.leg2.eta(),self.leg2.phi()))
+
+    # Vertix objects for various X mass values
+    def vertex(self, mass):
+        v1 = ROOT.TVector3(self.leg1.caloPosition().x(), self.leg1.caloPosition().y(),self.leg1.caloPosition().z())
+        v2 = ROOT.TVector3(self.leg2.caloPosition().x(), self.leg2.caloPosition().y(),self.leg2.caloPosition().z())
+        e1 = self.leg1.p4(2).energy()
+        e2 = self.leg2.p4(2).energy()
+        vertex = xVertex(v1, v2, e1, e2, mass)
+        return vertex
 
     def __getattr__(self, name):
         return getattr(self.LV,name)
