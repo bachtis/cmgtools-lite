@@ -1,6 +1,5 @@
 import math
 import ROOT
-from sympy import Symbol, nsolve
 
 class xVertex(object):
     def __init__(self, v1, v2, e1, e2, mass):
@@ -88,7 +87,7 @@ class xVertex(object):
                 angle = i*delta
                 x = c[0]+radius*math.cos(angle)
                 y = c[1]+radius*math.sin(angle)
-                if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0:
+                if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
                     continue
                 points.append([[x,y],self.getPt(x,y,v1[0],v2[0],v1[1],v2[1])])
         if len(points) == 0:
@@ -97,3 +96,15 @@ class xVertex(object):
         coord = ROOT.TVector3(best[0][0], best[0][1], 0)
         coord.Rotate(-theta, axis)
         return [coord, best[1]]
+
+    def valid(self):
+        v1 = self.v1
+        v2 = self.v2
+        x = (v1[0]+v2[0])/2.
+        y = (v1[1]+v2[1])/2.
+        z = (v1[2]+v2[2])/2.
+        vertex = self.getVertex()
+        vx = vertex[0][0]
+        vy = vertex[0][1]
+        vz = vertex[0][2]
+        return (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-y)**2)

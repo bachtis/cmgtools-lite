@@ -16,6 +16,7 @@ displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables =
     NTupleVariable("vz", lambda x: x.getVertex()[0][2], float),
     NTupleVariable("theta", lambda x: x.getPhi(), float),
     NTupleVariable("pt", lambda x: x.getVertex()[1], float),
+    NTupleVariable("valid", lambda x: x.valid(), int),
 ])
 
 
