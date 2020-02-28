@@ -28,6 +28,21 @@ class PhotonPair(object):
                            leg1.p4(2).energy(),
                            leg2.p4(2).energy(),
                            30)
+        self.vertex40 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           40)
+        self.vertex50 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           50)
+        self.vertex60 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           60)
 
     def rawP4(self):
         return self.leg1.p4(2)+self.leg2.p4(2)

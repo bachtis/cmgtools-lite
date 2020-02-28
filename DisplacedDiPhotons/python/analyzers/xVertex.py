@@ -34,8 +34,8 @@ class xVertex(object):
         e1 = self.e1
         e2 = self.e2
         if abs(1.0-m**2/(2*e1*e2))>1:
-            return 1
             self.valid = 0
+            return math.pi
         return math.acos(1.0-m**2/(2*e1*e2))
 
     ########FOLLOWING METHODS ARE FOR 2D WHEN GETTING VERTEX, AFTER WE ROTATE THE ECAL VECTORS###################
@@ -60,13 +60,16 @@ class xVertex(object):
     def getPt(self, x,y,x1,x2,y1,y2):
         e1 = self.e1
         e2 = self.e2
-        cosTheta1 = (x*(x1-x)+y*(y1-y))/(math.sqrt(x**2+y**2)*math.sqrt((x1-x)**2+(y1-y)**2))
-        cosTheta2 = (x*(x2-x)+y*(y2-y))/(math.sqrt(x**2+y**2)*math.sqrt((x2-x)**2+(y2-y)**2))
-        theta1 = math.acos(cosTheta1)
-        theta2 = math.acos(cosTheta2)
-        pt1 = e1*math.sin(theta1)
-        pt2 = e2*math.sin(theta2)
-        return pt1+pt2
+        v1 = ROOT.TVector3(x1,y1,0)
+        v2 = ROOT.TVector3(x2,y2,0)
+        v = ROOT.TVector3(x,y,0)
+        v2 = v2-v
+        v1 = v1-v
+        sinTheta1 = (v.Cross(v1).Mag())/(v.Mag()*v1.Mag())*math.copysign(1,v.Cross(v1)[2])
+        sinTheta2 = (v.Cross(v2).Mag())/(v.Mag()*v2.Mag())*math.copysign(1,v.Cross(v2)[2])
+        pt1 = e1*sinTheta1
+        pt2 = e2*sinTheta2
+        return pt1-pt2
 
     # Get phi from vertex of (x,y) going to (x1,y1) (x2,y2) - to remove points directly between ecal hits
     def getPhiFromPoints(self, x,y,x1,x2,y1,y2):
