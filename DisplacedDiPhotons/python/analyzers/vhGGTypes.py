@@ -11,10 +11,10 @@ conversionType = NTupleObjectType("conversion",baseObjectTypes = [], variables =
 
 
 displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables = [
-    NTupleVariable("vx", lambda x: x.vertex[0], float),
-    NTupleVariable("vy", lambda x: x.vertex[1], float),
-    NTupleVariable("vz", lambda x: x.vertex[2], float),
-    NTupleVariable("theta", lambda x: x.getPhi(), float),
+    NTupleVariable("x", lambda x: x.vertex[0], float),
+    NTupleVariable("y", lambda x: x.vertex[1], float),
+    NTupleVariable("z", lambda x: x.vertex[2], float),
+    NTupleVariable("phi", lambda x: x.getPhi(), float),
     NTupleVariable("pt", lambda x: x.pt, float),
     NTupleVariable("valid", lambda x: x.valid, int),
 ])

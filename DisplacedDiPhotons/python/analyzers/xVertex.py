@@ -69,13 +69,13 @@ class xVertex(object):
         sinTheta2 = (v.Cross(v2).Mag())/(v.Mag()*v2.Mag())*math.copysign(1,v.Cross(v2)[2])
         pt1 = e1*sinTheta1
         pt2 = e2*sinTheta2
-        return pt1-pt2
+        return pt1+pt2
 
     # Get phi from vertex of (x,y) going to (x1,y1) (x2,y2) - to remove points directly between ecal hits
     def getPhiFromPoints(self, x,y,x1,x2,y1,y2):
-        cosTheta = ((x1-x)*(x2-x)+(y1-y)*(y2-y))/(math.sqrt((x1-x)**2+(y1-y)**2)*math.sqrt((x2-x)**2+(y2-y)**2))
-        theta = math.acos(cosTheta)
-        return theta
+        cosPhi = ((x1-x)*(x2-x)+(y1-y)*(y2-y))/(math.sqrt((x1-x)**2+(y1-y)**2)*math.sqrt((x2-x)**2+(y2-y)**2))
+        phi = math.acos(cosPhi)
+        return phi
 
 
     # Put everything together, return set the vertex and return the perp momentum
@@ -101,12 +101,12 @@ class xVertex(object):
             y = c[1]+radius*math.sin(angle)
             if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
                 continue
-            points.append([[x,y],self.getPt(x,y,v1[0],v2[0],v1[1],v2[1])])
-        best = min(points, key = lambda x: abs(x[1]))
-        coord = ROOT.TVector3(best[0][0], best[0][1], 0)
+            points.append([x,y])
+        best = min(points, key = lambda x: abs(self.getPt(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
+        coord = ROOT.TVector3(best[0], best[1], 0)
         coord.Rotate(-theta, axis)
         self.vertex = coord
-        self.pt = best[1]
+        self.pt = self.getPt(best[0], best[1], v1[0], v2[0], v1[1], v2[1])
         self.checkValid()
 
     def checkValid(self):
@@ -119,4 +119,4 @@ class xVertex(object):
         vx = self.vertex[0]
         vy = self.vertex[1]
         vz = self.vertex[2]
-        self.valid = (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-y)**2)
+        self.valid = (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-z)**2)
