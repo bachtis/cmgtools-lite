@@ -13,7 +13,21 @@ class PhotonPair(object):
         et2 = math.sqrt(leg2.mass()*leg2.mass()+leg2.pt()*leg2.pt())
         #self.MT2  =self.leg1.p4(2).mass()*self.leg1.p4(2).mass()+\
         #                    self.leg2.p4(2).mass()*self.leg2.p4(2).mass()+2*(et1*et2-self.leg1.p4(2).px()*self.leg2.p4(2).px()-self.leg1.p4(2).py()*self.leg2.p4(2).py())
-        
+        self.vertex10 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           10)
+        self.vertex20 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           20)
+        self.vertex30 = xVertex(ROOT.TVector3(leg1.caloPosition().x(), leg1.caloPosition().y(),leg1.caloPosition().z()),
+                           ROOT.TVector3(leg2.caloPosition().x(), leg2.caloPosition().y(),leg2.caloPosition().z()),
+                           leg1.p4(2).energy(),
+                           leg2.p4(2).energy(),
+                           30)
 
     def rawP4(self):
         return self.leg1.p4(2)+self.leg2.p4(2)

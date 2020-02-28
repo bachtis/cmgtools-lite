@@ -8,6 +8,10 @@ class xVertex(object):
         self.e1 = e1
         self.e2 = e2
         self.mass = mass
+        self.valid = 1
+        self.vertex = ROOT.TVector3(-999,-999,-999)
+        self.pt = 999
+        self.setVertex()
 
     # Given two ecal photon positions, return angle between photon plane and xy plane
     def getRotAngle(self):
@@ -29,6 +33,9 @@ class xVertex(object):
         m = self.mass
         e1 = self.e1
         e2 = self.e2
+        if abs(1.0-m**2/(2*e1*e2))>1:
+            return 1
+            self.valid = 0
         return math.acos(1.0-m**2/(2*e1*e2))
 
     ########FOLLOWING METHODS ARE FOR 2D WHEN GETTING VERTEX, AFTER WE ROTATE THE ECAL VECTORS###################
@@ -68,8 +75,8 @@ class xVertex(object):
         return theta
 
 
-    # Put everything together, return [best point, pt at that point]
-    def getVertex(self):
+    # Put everything together, return set the vertex and return the perp momentum
+    def setVertex(self):
         v1 = self.v1
         v2 = self.v2
         axis = self.getRotAxis()
@@ -77,34 +84,36 @@ class xVertex(object):
         v1.Rotate(theta, axis)
         v2.Rotate(theta, axis)
         phi = self.getPhi()
+        if not self.valid:
+            return -1
         radius = self.getRadius(v1[0], v2[0], v1[1], v2[1], phi)
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
         steps = 1000
         delta = 2*math.pi/steps
         points = []
-        for c in centers:
-            for i in range(steps):
-                angle = i*delta
-                x = c[0]+radius*math.cos(angle)
-                y = c[1]+radius*math.sin(angle)
-                if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
-                    continue
-                points.append([[x,y],self.getPt(x,y,v1[0],v2[0],v1[1],v2[1])])
-        if len(points) == 0:
-            return [ROOT.TVector3(-999,-999,-999),999]
+        c = min(centers, key = lambda x: x[0]**2+x[1]**2)
+        for i in range(steps):
+            angle = i*delta
+            x = c[0]+radius*math.cos(angle)
+            y = c[1]+radius*math.sin(angle)
+            if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
+                continue
+            points.append([[x,y],self.getPt(x,y,v1[0],v2[0],v1[1],v2[1])])
         best = min(points, key = lambda x: abs(x[1]))
         coord = ROOT.TVector3(best[0][0], best[0][1], 0)
         coord.Rotate(-theta, axis)
-        return [coord, best[1]]
+        self.vertex = coord
+        self.pt = best[1]
+        self.checkValid()
 
-    def valid(self):
+    def checkValid(self):
         v1 = self.v1
         v2 = self.v2
         x = (v1[0]+v2[0])/2.
         y = (v1[1]+v2[1])/2.
         z = (v1[2]+v2[2])/2.
-        vertex = self.getVertex()
-        vx = vertex[0][0]
-        vy = vertex[0][1]
-        vz = vertex[0][2]
-        return (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-y)**2)
+        
+        vx = self.vertex[0]
+        vy = self.vertex[1]
+        vz = self.vertex[2]
+        self.valid = (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-y)**2)

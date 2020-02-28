@@ -11,12 +11,12 @@ conversionType = NTupleObjectType("conversion",baseObjectTypes = [], variables =
 
 
 displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables = [
-    NTupleVariable("vx", lambda x: x.getVertex()[0][0], float),
-    NTupleVariable("vy", lambda x: x.getVertex()[0][1], float),
-    NTupleVariable("vz", lambda x: x.getVertex()[0][2], float),
+    NTupleVariable("vx", lambda x: x.vertex[0], float),
+    NTupleVariable("vy", lambda x: x.vertex[1], float),
+    NTupleVariable("vz", lambda x: x.vertex[2], float),
     NTupleVariable("theta", lambda x: x.getPhi(), float),
-    NTupleVariable("pt", lambda x: x.getVertex()[1], float),
-    NTupleVariable("valid", lambda x: x.valid(), int),
+    NTupleVariable("pt", lambda x: x.pt, float),
+    NTupleVariable("valid", lambda x: x.valid, int),
 ])
 
 
@@ -33,7 +33,7 @@ XType = NTupleObjectType("PhotonPair", baseObjectTypes=[fourVectorType], variabl
     NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
     NTupleSubObject("g1",  lambda x : x.leg1,photonType),
     NTupleSubObject("g2",  lambda x : x.leg2,photonType),
-    NTupleSubObject("vertex10", lambda x: x.vertex(10), displacementType),
+    NTupleSubObject("vertex10", lambda x: x.vertex10, displacementType),
 #    NTupleSubObject("vertex20", lambda x: x.vertex(20), displacementType),
 #    NTupleSubObject("vertex30", lambda x: x.vertex(30), displacementType),
 #    NTupleSubObject("vertex40", lambda x: x.vertex(40), displacementType),
