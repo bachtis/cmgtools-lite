@@ -114,7 +114,7 @@ triggerFlagsAna.triggerBits ={
 
 
 #-------- HOW TO RUN
-test = 1
+test = 0
 if test==1:
     # test a single component, using a single thread.
     selectedComponents = [selectedComponents[0]]
@@ -134,7 +134,7 @@ else:
     # full scale production
     # split samples in a smarter way
     from CMGTools.RootTools.samples.configTools import configureSplittingFromTime, printSummary
-#   configureSplittingFromTime(selectedComponents, 20, 6)  # means 70 ms per event, job to last 12h #DATA
+    #    configureSplittingFromTime(selectedComponents, 20, 6)  # means 70 ms per event, job to last 12h #DATA
     configureSplittingFromTime(selectedComponents, 60, 6)  # means 70 ms per event, job to last 12h #MC
     # print summary of components to process
     printSummary(selectedComponents)
