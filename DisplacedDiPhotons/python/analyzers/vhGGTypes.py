@@ -1,6 +1,7 @@
 from PhysicsTools.Heppy.analyzers.core.AutoFillTreeProducer  import * 
 
 import ROOT
+import math
 dummyLV=ROOT.math.XYZTLorentzVector(0.0,0.0,0.0001,0.0001)
 
 conversionType = NTupleObjectType("conversion",baseObjectTypes = [], variables = [
@@ -14,6 +15,7 @@ displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables =
     NTupleVariable("x", lambda x: x.vertex[0], float),
     NTupleVariable("y", lambda x: x.vertex[1], float),
     NTupleVariable("z", lambda x: x.vertex[2], float),
+    NTupleVariable("d0", lambda x: math.sqrt(x.vertex[0]**2+x.vertex[1]**2+x.vertex[2]**2), float),
     NTupleVariable("phi", lambda x: x.getPhi(), float),
     NTupleVariable("pt", lambda x: x.pt, float),
     NTupleVariable("valid", lambda x: x.valid, int),

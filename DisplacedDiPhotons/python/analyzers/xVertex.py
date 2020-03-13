@@ -78,7 +78,7 @@ class xVertex(object):
         return phi
 
 
-    # Put everything together, return set the vertex and return the perp momentum
+    # Put everything together, set the vertex, pt, and valid
     def setVertex(self):
         v1 = self.v1
         v2 = self.v2
@@ -102,6 +102,8 @@ class xVertex(object):
             if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
                 continue
             points.append([x,y])
+        if len(points) == 0:
+            return None
         best = min(points, key = lambda x: abs(self.getPt(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
         coord = ROOT.TVector3(best[0], best[1], 0)
         coord.Rotate(-theta, axis)
