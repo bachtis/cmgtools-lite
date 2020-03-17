@@ -199,8 +199,11 @@ class ComponentCreator(object):
         # print 'getting files for', dataset,user,pattern
         ds = createMyDataset( user, dataset, pattern, dbsInstance, True )
         files = ds.listOfGoodFiles()
-        mapping = 'root://eoscms.cern.ch//eos/cms%s'
+        #mapping = 'root://eoscms.cern.ch//eos/cms%s'
+        mapping = 'root://cmseos.fnal.gov//%s'
         if useAAA: mapping = 'root://cms-xrd-global.cern.ch/%s'
+        for f in files:
+            print f
         return [ mapping % f for f in files]
 
     def getSkimEfficiency(self,dataset,user):

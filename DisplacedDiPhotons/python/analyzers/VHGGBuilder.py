@@ -13,8 +13,6 @@ from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
-from sympy import Symbol, nsolve
-
 class VHGGBuilder(Analyzer):
 
     def __init__(self, cfg_ana, cfg_comp, looperName):
@@ -39,8 +37,8 @@ class VHGGBuilder(Analyzer):
             if (l1.charge()+l2.charge())!=0:
                 continue
             # Did this need to be added? Wasn't in and couldn't find any instances where it wasn't true
-#            if l1.pdgId()+l2.pdgId()!=0:
-#                continue
+            if l1.pdgId()+l2.pdgId()!=0:
+                continue
             Z = Pair(l1,l2,23)
             mass = Z.p4().mass()
             if mass<50 or mass>140:
@@ -123,9 +121,13 @@ class VHGGBuilder(Analyzer):
         event.WX=[]
         event.ZXX = []
         event.WXX = []
-        goodLeptons = filter(lambda x: x.pt()>0,event.selectedLeptons)
-        goodPhotons = filter(lambda x: x.pt()>0,event.selectedPhotons)
-
+        goodLeptons = filter(lambda x: x.pt()>0 and x.relIso03 < .1,event.selectedLeptons)
+        photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
+        goodPhotons = []
+        for l in goodLeptons:
+            for x in goodPhotons:
+                if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
+                    goodPhotons.append(x)
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
@@ -201,6 +203,20 @@ class VHGGBuilder(Analyzer):
                 bestWX.otherLeptons = len(goodLeptons) -1
                 bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(),bestX.leg1.phi())
                 bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(),bestX.leg2.phi())
+
+
+                # Check for electrons from z's misID'd as photons
+                misID = 0
+                if abs(bestW.pdgId()) == 11):
+                    for l in goodLeptons:
+                        if abs(l.pdgId()) != 11 and bestW.leg1.charge()+l.charge()!=0:
+                            continue
+                        for x in [bestX.leg1, bestX.leg2]:
+                            newP4 = bestW.leg1.p4()+l.p4() + x.p4(2)
+                            mass = newP4.mass()
+                            if mass < 100 and mass > 80:
+                                misID = 1
+                bestWX.misID = misID
                 event.WX.append(bestWX)
 
             goodXXs = []

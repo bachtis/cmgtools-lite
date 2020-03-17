@@ -80,6 +80,7 @@ WXType = NTupleObjectType("WXType", baseObjectTypes=[], variables = [
     NTupleSubObject("X",  lambda x : x.leg2,XType),
     NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1, float),
     NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
+    NTupleVariable("misID", lambda x: x.misID, int),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
 
