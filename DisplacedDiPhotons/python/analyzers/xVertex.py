@@ -29,6 +29,7 @@ class xVertex(object):
         return v3.Cross(ez)
 
     # Given mass and two ecal energies, find inscribed angle phi
+    # If kinematically impossible, set valid to 0 and return pi
     def getPhi(self):
         m = self.mass
         e1 = self.e1
@@ -71,11 +72,29 @@ class xVertex(object):
         pt2 = e2*sinTheta2
         return pt1+pt2
 
+    # Return theta1-theta2
+    def getPt(self, x,y,x1,x2,y1,y2):
+        v1 = ROOT.TVector3(x1,y1,0)
+        v2 = ROOT.TVector3(x2,y2,0)
+        v = ROOT.TVector3(x,y,0)
+        v2 = v2-v
+        v1 = v1-v
+        sinTheta1 = (v.Cross(v1).Mag())/(v.Mag()*v1.Mag())*math.copysign(1,v.Cross(v1)[2])
+        sinTheta2 = (v.Cross(v2).Mag())/(v.Mag()*v2.Mag())*math.copysign(1,v.Cross(v2)[2])
+        return sinTheta1-sinTheta2
+
+
     # Get phi from vertex of (x,y) going to (x1,y1) (x2,y2) - to remove points directly between ecal hits
     def getPhiFromPoints(self, x,y,x1,x2,y1,y2):
         cosPhi = ((x1-x)*(x2-x)+(y1-y)*(y2-y))/(math.sqrt((x1-x)**2+(y1-y)**2)*math.sqrt((x2-x)**2+(y2-y)**2))
         phi = math.acos(cosPhi)
         return phi
+
+    # Check if a vertex is between beamline and ecal hits
+    def checkValid(self, vx, vy, x1, y1, x2, y2):
+        x = (x1+x2)/2.
+        y = (y1+y2)/2.
+        return ((x**2+y**2) > (vx**2+vy**2) and (x**2+y**2) > ((vx-x)**2+(vy-y)**2))
 
 
     # Put everything together, set the vertex, pt, and valid
@@ -88,37 +107,32 @@ class xVertex(object):
         v2.Rotate(theta, axis)
         phi = self.getPhi()
         if not self.valid:
-            return -1
+            return None
         radius = self.getRadius(v1[0], v2[0], v1[1], v2[1], phi)
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
-        steps = 1000
-        delta = 2*math.pi/steps
+        stepsPhi = 1000
+        deltaPhi = 2*math.pi/stepsPhi
+        stepsR = 100
+        deltaR = 1./stepsR
         points = []
         c = min(centers, key = lambda x: x[0]**2+x[1]**2)
-        for i in range(steps):
-            angle = i*delta
-            x = c[0]+radius*math.cos(angle)
-            y = c[1]+radius*math.sin(angle)
-            if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
-                continue
-            points.append([x,y])
-        if len(points) == 0:
+        for j in range(stepsR):
+            r = radius-1+deltaR*j
+            for i in range(stepsPhi):
+                angle = i*deltaPhi
+                x = c[0]+r*math.cos(angle)
+                y = c[1]+r*math.sin(angle)
+                if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
+                    continue
+                points.append([x,y])
+        goodPoints = filter(lambda x: self.checkValid(p[0], p[1], v1[0], v1[1], v2[0], v2[1]), points)
+        if len(goodPoints) == 0:
+            self.valid = 0
             return None
-        best = min(points, key = lambda x: abs(self.getPt(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
+        best = min(goodPoints, key = lambda x: abs(self.getDeltaTheta(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
         coord = ROOT.TVector3(best[0], best[1], 0)
         coord.Rotate(-theta, axis)
         self.vertex = coord
         self.pt = self.getPt(best[0], best[1], v1[0], v2[0], v1[1], v2[1])
-        self.checkValid()
 
-    def checkValid(self):
-        v1 = self.v1
-        v2 = self.v2
-        x = (v1[0]+v2[0])/2.
-        y = (v1[1]+v2[1])/2.
-        z = (v1[2]+v2[2])/2.
-        
-        vx = self.vertex[0]
-        vy = self.vertex[1]
-        vz = self.vertex[2]
-        self.valid = (x**2+y**2+z**2) > (vx**2+vy**2+vz**2) and (x**2+y**2+z**2) > ((vx-x)**2+(vy-y)**2+(vz-z)**2)
+    

@@ -50,7 +50,13 @@ class VHGGBuilder(Analyzer):
         Xs=[]
         # Pair photons (TODO: Conversions)
         for g1,g2 in itertools.combinations(photons,2):
-
+            e1 = g1.p4(2).energy()
+            e2 = g2.p4(2).energy()
+            d1 = 0.2*math.sqrt(e1)
+            d2 = 0.2*math.sqrt(e2)
+            relDiff = abs(e1-e2)/(.2*math.sqrt(e1+e2))
+            if relDiff > 5:
+                continue
             X = PhotonPair(g1,g2,1995)
             Xs.append(X)
             
@@ -122,12 +128,12 @@ class VHGGBuilder(Analyzer):
         event.ZXX = []
         event.WXX = []
         goodLeptons = filter(lambda x: x.pt()>0 and x.relIso03 < .1,event.selectedLeptons)
-        photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
-        goodPhotons = []
-        for l in goodLeptons:
-            for x in goodPhotons:
-                if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
-                    goodPhotons.append(x)
+        goodPhotons = filter(lambda x: x.pt()>0,event.selectedPhotons)
+        #goodPhotons = []
+        #for l in goodLeptons:
+        #    for x in goodPhotons:
+        #        if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
+        #            goodPhotons.append(x)
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
@@ -207,15 +213,19 @@ class VHGGBuilder(Analyzer):
 
                 # Check for electrons from z's misID'd as photons
                 misID = 0
-                if abs(bestW.pdgId()) == 11):
+                if abs(bestW.pdgId()) == 11:
                     for l in goodLeptons:
-                        if abs(l.pdgId()) != 11 and bestW.leg1.charge()+l.charge()!=0:
+                        if abs(l.pdgId()) != 11 or bestW.leg1.charge()+l.charge()!=0:
                             continue
                         for x in [bestX.leg1, bestX.leg2]:
                             newP4 = bestW.leg1.p4()+l.p4() + x.p4(2)
                             mass = newP4.mass()
                             if mass < 100 and mass > 80:
                                 misID = 1
+                        newP4 = bestW.leg1.p4() + l1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                        mass = newP4.mass()
+                        if mass < 100 and mass > 80:
+                            misID = 1
                 bestWX.misID = misID
                 event.WX.append(bestWX)
 

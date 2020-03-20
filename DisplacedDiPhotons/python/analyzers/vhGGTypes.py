@@ -36,6 +36,7 @@ XType = NTupleObjectType("PhotonPair", baseObjectTypes=[fourVectorType], variabl
     NTupleSubObject("g1",  lambda x : x.leg1,photonType),
     NTupleSubObject("g2",  lambda x : x.leg2,photonType),
     NTupleSubObject("vertex10", lambda x: x.vertex10, displacementType),
+    NTupleSubObject("vertex15", lambda x: x.vertex15, displacementType),
     NTupleSubObject("vertex20", lambda x: x.vertex20, displacementType),
     NTupleSubObject("vertex30", lambda x: x.vertex30, displacementType),
     NTupleSubObject("vertex40", lambda x: x.vertex40, displacementType),
