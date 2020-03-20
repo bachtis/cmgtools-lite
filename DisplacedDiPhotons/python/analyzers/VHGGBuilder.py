@@ -50,13 +50,6 @@ class VHGGBuilder(Analyzer):
         Xs=[]
         # Pair photons (TODO: Conversions)
         for g1,g2 in itertools.combinations(photons,2):
-            e1 = g1.p4(2).energy()
-            e2 = g2.p4(2).energy()
-            d1 = 0.2*math.sqrt(e1)
-            d2 = 0.2*math.sqrt(e2)
-            relDiff = abs(e1-e2)/(.2*math.sqrt(e1+e2))
-            if relDiff > 5:
-                continue
             X = PhotonPair(g1,g2,1995)
             Xs.append(X)
             
@@ -128,12 +121,12 @@ class VHGGBuilder(Analyzer):
         event.ZXX = []
         event.WXX = []
         goodLeptons = filter(lambda x: x.pt()>0 and x.relIso03 < .1,event.selectedLeptons)
-        goodPhotons = filter(lambda x: x.pt()>0,event.selectedPhotons)
-        #goodPhotons = []
-        #for l in goodLeptons:
-        #    for x in goodPhotons:
-        #        if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
-        #            goodPhotons.append(x)
+        photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
+        goodPhotons = []
+        for l in goodLeptons:
+            for x in photons:
+                if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
+                    goodPhotons.append(x)
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
@@ -143,18 +136,18 @@ class VHGGBuilder(Analyzer):
         nZPairs = 0
         if len(Zs)>0:
             bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-
-            goodXs=[]
+            goodXs = Xs
+#            goodXs=[]
             # Select non overlapping Xs
-            for X in Xs:
-                overlap=False
-                for l in [bestZ.leg1,bestZ.leg2]:
-                    for g in [X.leg1,X.leg2]:
-                        if deltaR(l.eta(),l.phi(),g.eta(),g.phi())<0.5:
-                            overlap=True
-                            break
-                if not overlap:
-                    goodXs.append(X)
+#            for X in Xs:
+#                overlap=False
+#                for l in [bestZ.leg1,bestZ.leg2]:
+#                    for g in [X.leg1,X.leg2]:
+#                        if deltaR(l.eta(),l.phi(),g.eta(),g.phi())<0.5:
+#                            overlap=True
+#                            break
+#                if not overlap:
+#                    goodXs.append(X)
 
             # Pair Z to best X
             if len(goodXs)>0:
@@ -166,19 +159,20 @@ class VHGGBuilder(Analyzer):
                 bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg2.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg2.phi())))
                 event.ZX.append(bestZX)
                 nZPairs+=1
-
+                
+            goodXXs = XXs
             # Repeat for XX pairs
-            goodXXs = []
-            for XX in XXs:
-                overlap = False
-                for l in [bestZ.leg1, bestZ.leg2]:
-                    for X in [XX.x1, XX.x2]:
-                        for g in [X.leg1, X.leg2]:
-                            if deltaR(l.eta(), l.phi(), g.eta(), g.phi()) < 0.5:
-                                overlap = True
-                                break
-                if not overlap:
-                    goodXXs.append(XX)
+#            goodXXs = []
+#            for XX in XXs:
+#                overlap = False
+#                for l in [bestZ.leg1, bestZ.leg2]:
+#                    for X in [XX.x1, XX.x2]:
+#                        for g in [X.leg1, X.leg2]:
+#                            if deltaR(l.eta(), l.phi(), g.eta(), g.phi()) < 0.5:
+#                                overlap = True
+#                                break
+#                if not overlap:
+#                    goodXXs.append(XX)
             #Pair best XX to best Z
             if len(goodXXs) > 0:
                 bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
@@ -192,16 +186,17 @@ class VHGGBuilder(Analyzer):
         # If no Zs, search for Ws
         if len(Ws) > 0 and nZPairs == 0:
             bestW = max(Ws, key = lambda x: x.leg1.pt())
-            goodXs = []
-            for X in Xs:
-                for W in Ws:
-                    overlap = False
-                    for g in [X.leg1, X.leg2]:
-                        if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
-                            overlap = True
-                            break
-                if not overlap:
-                    goodXs.append(X)
+            goodXs = Xs
+#            goodXs = []
+#            for X in Xs:
+#                for W in Ws:
+#                    overlap = False
+#                    for g in [X.leg1, X.leg2]:
+#                        if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
+#                            overlap = True
+#                            break
+#                if not overlap:
+#                    goodXs.append(X)
                         
             if len(goodXs) > 0:
                 bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
@@ -228,17 +223,20 @@ class VHGGBuilder(Analyzer):
                             misID = 1
                 bestWX.misID = misID
                 event.WX.append(bestWX)
+            
+            goodXXs = XXs
 
-            goodXXs = []
-            for XX in XXs:
-                overlap = False
-                for W in Ws:
-                    for X in [XX.x1, XX.x2]:
-                        for g in [X.leg1, X.leg2]:
-                            if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
-                                overlap = True
-                                break
-                goodXXs.append(XX)
+#            goodXXs = []
+#            for XX in XXs:
+#                overlap = False
+#                for W in Ws:
+#                    for X in [XX.x1, XX.x2]:
+#                        for g in [X.leg1, X.leg2]:
+#                            if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
+#                                overlap = True
+#                                break
+#                if not overlap:
+#                    goodXXs.append(XX)
 
             if len(goodXXs) > 0:
                 bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())

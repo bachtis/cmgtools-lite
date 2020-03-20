@@ -72,17 +72,6 @@ class xVertex(object):
         pt2 = e2*sinTheta2
         return pt1+pt2
 
-    # Return theta1-theta2
-    def getPt(self, x,y,x1,x2,y1,y2):
-        v1 = ROOT.TVector3(x1,y1,0)
-        v2 = ROOT.TVector3(x2,y2,0)
-        v = ROOT.TVector3(x,y,0)
-        v2 = v2-v
-        v1 = v1-v
-        sinTheta1 = (v.Cross(v1).Mag())/(v.Mag()*v1.Mag())*math.copysign(1,v.Cross(v1)[2])
-        sinTheta2 = (v.Cross(v2).Mag())/(v.Mag()*v2.Mag())*math.copysign(1,v.Cross(v2)[2])
-        return sinTheta1-sinTheta2
-
 
     # Get phi from vertex of (x,y) going to (x1,y1) (x2,y2) - to remove points directly between ecal hits
     def getPhiFromPoints(self, x,y,x1,x2,y1,y2):
@@ -112,8 +101,8 @@ class xVertex(object):
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
         stepsPhi = 1000
         deltaPhi = 2*math.pi/stepsPhi
-        stepsR = 100
-        deltaR = 1./stepsR
+        stepsR = 20
+        deltaR = 2./stepsR
         points = []
         c = min(centers, key = lambda x: x[0]**2+x[1]**2)
         for j in range(stepsR):
@@ -129,7 +118,7 @@ class xVertex(object):
         if len(goodPoints) == 0:
             self.valid = 0
             return None
-        best = min(goodPoints, key = lambda x: abs(self.getDeltaTheta(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
+        best = min(goodPoints, key = lambda x: abs(self.getPt(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
         coord = ROOT.TVector3(best[0], best[1], 0)
         coord.Rotate(-theta, axis)
         self.vertex = coord
