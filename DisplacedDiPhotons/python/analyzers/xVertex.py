@@ -79,7 +79,8 @@ class xVertex(object):
         phi = math.acos(cosPhi)
         return phi
 
-    # Check if a vertex is between beamline and ecal hits
+    # Check if a vertex is between beamline and ecal hits (give 1 cm uncertainty)
+    # TODO: find better way to calc. uncertainty
     def checkValid(self, vx, vy, x1, y1, x2, y2):
         x = (x1+x2)/2.
         y = (y1+y2)/2.

@@ -124,10 +124,14 @@ class VHGGBuilder(Analyzer):
         goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
         photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
         goodPhotons = []
-        for l in goodLeptons:
-            for x in photons:
+        for x in photons:
+            overlap = False
+            for l in goodLeptons:
                 if deltaR(l.eta(), l.phi(), x.eta(), x.phi()) > 0.5:
-                    goodPhotons.append(x)
+                    overlap = True
+            if not overlap:
+                goodPhotons.append(x)
+
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
