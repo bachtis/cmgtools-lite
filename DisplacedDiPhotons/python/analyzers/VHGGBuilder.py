@@ -120,7 +120,8 @@ class VHGGBuilder(Analyzer):
         event.WX=[]
         event.ZXX = []
         event.WXX = []
-        goodLeptons = filter(lambda x: x.pt()>0 and x.relIso03 < .1,event.selectedLeptons)
+        leptons = filter(lambda x: x.pt() > 0, event.selectedLeptons)
+        goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
         photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
         goodPhotons = []
         for l in goodLeptons:
@@ -209,7 +210,7 @@ class VHGGBuilder(Analyzer):
                 # Check for electrons from z's misID'd as photons
                 misID = 0
                 if abs(bestW.pdgId()) == 11:
-                    for l in goodLeptons:
+                    for l in leptons:
                         if abs(l.pdgId()) != 11 or bestW.leg1.charge()+l.charge()!=0:
                             continue
                         for x in [bestX.leg1, bestX.leg2]:

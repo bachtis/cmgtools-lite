@@ -34,7 +34,7 @@ class xVertex(object):
         m = self.mass
         e1 = self.e1
         e2 = self.e2
-        if abs(1.0-m**2/(2*e1*e2))>1:
+        if abs(1.0-m**2/(2*e1*e2))>=1:
             self.valid = 0
             return math.pi
         return math.acos(1.0-m**2/(2*e1*e2))
@@ -83,11 +83,14 @@ class xVertex(object):
     def checkValid(self, vx, vy, x1, y1, x2, y2):
         x = (x1+x2)/2.
         y = (y1+y2)/2.
-        return ((x**2+y**2) > (vx**2+vy**2) and (x**2+y**2) > ((vx-x)**2+(vy-y)**2))
+        return ((x**2+y**2) - (vx**2+vy**2)>-1 and (x**2+y**2) - ((vx-x)**2+(vy-y)**2))>-1
 
 
     # Put everything together, set the vertex, pt, and valid
     def setVertex(self):
+        if self.v1[0]==self.v2[0] and self.v1[1]==self.v2[1] and self.v1[2]==self.v2[2]:
+            self.valid = 0
+            return None
         v1 = self.v1
         v2 = self.v2
         axis = self.getRotAxis()
@@ -101,20 +104,16 @@ class xVertex(object):
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
         stepsPhi = 1000
         deltaPhi = 2*math.pi/stepsPhi
-        stepsR = 20
-        deltaR = 2./stepsR
         points = []
         c = min(centers, key = lambda x: x[0]**2+x[1]**2)
-        for j in range(stepsR):
-            r = radius-1+deltaR*j
-            for i in range(stepsPhi):
-                angle = i*deltaPhi
-                x = c[0]+r*math.cos(angle)
-                y = c[1]+r*math.sin(angle)
-                if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
-                    continue
-                points.append([x,y])
-        goodPoints = filter(lambda x: self.checkValid(p[0], p[1], v1[0], v1[1], v2[0], v2[1]), points)
+        for i in range(stepsPhi):
+            angle = i*deltaPhi
+            x = c[0]+radius*math.cos(angle)
+            y = c[1]+radius*math.sin(angle)
+            if abs(self.getPhiFromPoints(x,y,v1[0],v2[0],v1[1],v2[1]) - phi) > 0.001:
+                continue
+            points.append([x,y])
+        goodPoints = filter(lambda x: self.checkValid(x[0], x[1], v1[0], v1[1], v2[0], v2[1]), points)
         if len(goodPoints) == 0:
             self.valid = 0
             return None
