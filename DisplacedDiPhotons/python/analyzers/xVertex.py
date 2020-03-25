@@ -39,6 +39,19 @@ class xVertex(object):
             return math.pi
         return math.acos(1.0-m**2/(2*e1*e2))
 
+    def checkValid3D(self):
+        x = (self.v1[0]+self.v2[0])/2.
+        y = (self.v1[1]+self.v2[1])/2.
+        z = (self.v1[2]+self.v2[2])/2.
+        vx = self.vertex[0]
+        vy = self.vertex[1]
+        vz = self.vertex[2]
+        # Assuming 5cm error
+        # Triangle with origin, clusters, vertex: origin to cluster should be hypotenuse
+        valid1 = (math.sqrt(x**2+y**2+z**2) - math.sqrt(vx**2+vy**2+vz**2)) > -5
+        valid2= (math.sqrt(x**2+y**2+z**2) - math.sqrt((x-vx)**2+(y-vy)**2+(z-vz)**2)) > -5
+        self.valid = (valid1 and valid2)
+
     ########FOLLOWING METHODS ARE FOR 2D WHEN GETTING VERTEX, AFTER WE ROTATE THE ECAL VECTORS###################
 
     # Get radius of circles given inscribed angle and two points
@@ -84,14 +97,10 @@ class xVertex(object):
     def checkValid(self, vx, vy, x1, y1, x2, y2):
         x = (x1+x2)/2.
         y = (y1+y2)/2.
-        return ((x**2+y**2) - (vx**2+vy**2)>-1 and (x**2+y**2) - ((vx-x)**2+(vy-y)**2))>-1
-
+        return (math.sqrt(x**2+y**2) - math.sqrt(vx**2+vy**2)>-5 and math.sqrt(x**2+y**2) - math.sqrt((vx-x)**2+(vy-y)**2))>-5
 
     # Put everything together, set the vertex, pt, and valid
     def setVertex(self):
-        if self.v1[0]==self.v2[0] and self.v1[1]==self.v2[1] and self.v1[2]==self.v2[2]:
-            self.valid = 0
-            return None
         v1 = self.v1
         v2 = self.v2
         axis = self.getRotAxis()
@@ -121,7 +130,8 @@ class xVertex(object):
         best = min(goodPoints, key = lambda x: abs(self.getPt(x[0], x[1],v1[0],v2[0],v1[1],v2[1])))
         coord = ROOT.TVector3(best[0], best[1], 0)
         coord.Rotate(-theta, axis)
+        v1.Rotate(-theta, axis)
+        v2.Rotate(-theta, axis)
         self.vertex = coord
         self.pt = self.getPt(best[0], best[1], v1[0], v2[0], v1[1], v2[1])
-
-    
+        self.checkValid3D()

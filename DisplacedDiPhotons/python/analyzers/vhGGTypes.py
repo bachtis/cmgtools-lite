@@ -101,3 +101,13 @@ WXXType = NTupleObjectType("WXXType", baseObjectTypes=[], variables = [
     NTupleVariable("deltaPhi_X2_g2", lambda x: x.deltaPhi_X2_g2, float),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
 ])
+
+
+genType = NTupleObjectType("genType", baseObjectTypes=[], variables = [
+    NTupleVariable("pt", lambda x: x.pt(), float),
+    NTupleVariable("eta", lambda x: x.eta(), float),
+    NTupleVariable("phi", lambda x: x.phi(), float),
+    NTupleVariable("vx", lambda x: x.vx(), float),
+    NTupleVariable("vy", lambda x: x.vy(), float),
+    NTupleVariable("vz", lambda x: x.vz(), float),
+])
