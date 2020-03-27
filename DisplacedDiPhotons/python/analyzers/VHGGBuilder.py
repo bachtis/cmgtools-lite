@@ -114,12 +114,13 @@ class VHGGBuilder(Analyzer):
         return flag
 
         
-    def log(self, signal, Ws):
+    def log(self, signal, leptons):
         for S in signal:
             print "S vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, ID={}".format(S.vx(),S.vy(),S.vz(),S.pt(),S.eta(),S.phi(), S.pdgId())
             for d in range(S.numberOfDaughters()):
                 print "    Daughter vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, ID={}".format(S.daughter(d).vx(),S.daughter(d).vy(),S.daughter(d).vz(),S.daughter(d).pt(),S.daughter(d).eta(),S.daughter(d).phi(), S.daughter(d).pdgId())
-        print "Lepton pt={}, eta={}, phi={}, ID={}".format(Ws[0].daughter(0).pt(), Ws[0].daughter(0).eta(), Ws[0].daughter(0).phi(), Ws[0].daughter(0).pdgId())
+        for l in leptons:
+            print "Lepton pt={}, eta={}, phi={}, ID={}".format(l.pt(), l.eta(), l.phi(), l.pdgId())
 
     def process(self, event):
         self.readCollections(event.input)
@@ -149,7 +150,7 @@ class VHGGBuilder(Analyzer):
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
         XXs = self.makeXPair(goodPhotons)
-
+        genLeptons = filter(lambda x: abs(x.pdgId())==11 or abs(x.pdgId())==13, gen)
         signal = filter(lambda x: abs(x.pdgId())==9000006, gen)
         signalPhotons = filter(lambda x: abs(x.mother().pdgId())==9000006, genPhotons)
         event.GenPhoton = signalPhotons
@@ -181,6 +182,25 @@ class VHGGBuilder(Analyzer):
                 bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg2.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg2.phi())))
                 event.ZX.append(bestZX)
                 nZPairs+=1
+
+                if debug:
+                    self.log(signal, genLeptons)
+                    print "ZX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestZX.leg2.vertex15.vertex[0],bestZX.leg2.vertex15.vertex[1],bestZX.leg2.vertex15.vertex[2], bestZX.leg2.vertex15.valid)
+                    print "X Photons:\n   ",
+                    print bestZX.leg2.leg1
+                    print "   ",
+                    print bestZX.leg2.leg2
+                    print "Gen Photons"
+                    for g in genPhotons:
+                        print "    vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, energy={:.2f}, mother={}".format(g.vx(),g.vy(),g.vz(),g.pt(),g.eta(),g.phi(),g.energy(),g.mother().pdgId())
+                    print "Reco photons"
+                    for p in photons:
+                        print "    ",
+                        print p
+                    
+                    import pdb
+                    pdb.set_trace()
+
                 
             goodXXs = XXs
             # Repeat for XX pairs
@@ -233,7 +253,7 @@ class VHGGBuilder(Analyzer):
 
                 # Check for electrons from z's misID'd as photons
                 misID = 0
-                if abs(bestW.pdgId()) == 11:
+                if abs(bestW.leg1.pdgId()) == 11:
                     for l in leptons:
                         if abs(l.pdgId()) != 11 or bestW.leg1.charge()+l.charge()!=0:
                             continue
@@ -246,10 +266,19 @@ class VHGGBuilder(Analyzer):
                         mass = newP4.mass()
                         if mass < 100 and mass > 80:
                             misID = 1
+                    for x in [bestX.leg1, bestX.leg2]:
+                        newP4 = bestW.leg1.p4() + x.p4(2)
+                        mass = newP4.mass()
+                        if mass < 100 and mass > 80:
+                            misID = 1
+                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                    mass = newP4.mass()
+                    if mass < 100 and mass > 80:
+                        misID = 1
                 bestWX.misID = misID
                 event.WX.append(bestWX)
                 if debug:
-                    self.log(signal, genWs)
+                    self.log(signal, genLeptons)
                     print "WX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWX.leg2.vertex15.vertex[0],bestWX.leg2.vertex15.vertex[1],bestWX.leg2.vertex15.vertex[2], bestWX.leg2.vertex15.valid)
                     print "X Photons:\n   ",
                     print bestWX.leg2.leg1
