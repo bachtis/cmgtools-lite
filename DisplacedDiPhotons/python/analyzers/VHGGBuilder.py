@@ -262,7 +262,7 @@ class VHGGBuilder(Analyzer):
                             mass = newP4.mass()
                             if mass < 100 and mass > 80:
                                 misID = 1
-                        newP4 = bestW.leg1.p4() + l1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                        newP4 = bestW.leg1.p4() + l.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
                         mass = newP4.mass()
                         if mass < 100 and mass > 80:
                             misID = 1
@@ -276,6 +276,7 @@ class VHGGBuilder(Analyzer):
                     if mass < 100 and mass > 80:
                         misID = 1
                 bestWX.misID = misID
+                
                 event.WX.append(bestWX)
                 if debug:
                     self.log(signal, genLeptons)
