@@ -13,7 +13,7 @@ from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
-debug = False
+debug = True
 
 class VHGGBuilder(Analyzer):
 
@@ -114,14 +114,27 @@ class VHGGBuilder(Analyzer):
         return flag
 
         
-    def log(self, signal, leptons):
+    def log(self, signal, genLeptons, genPhotons, recoLeptons, recoPhotons):
         for S in signal:
-            print "S vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, ID={}".format(S.vx(),S.vy(),S.vz(),S.pt(),S.eta(),S.phi(), S.pdgId())
+            print "S vertex=({:.3f}, {:.3f}, {:.3f}), pt={:.3f}, eta={:.3f}, phi={:.3f}, ID={}".format(S.vx(),S.vy(),S.vz(),S.pt(),S.eta(),S.phi(), S.pdgId())
             for d in range(S.numberOfDaughters()):
-                print "    Daughter vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, ID={}".format(S.daughter(d).vx(),S.daughter(d).vy(),S.daughter(d).vz(),S.daughter(d).pt(),S.daughter(d).eta(),S.daughter(d).phi(), S.daughter(d).pdgId())
-        for l in leptons:
-            print "Lepton pt={}, eta={}, phi={}, ID={}".format(l.pt(), l.eta(), l.phi(), l.pdgId())
+                print "    Daughter vertex=({:.3f}, {:.3f}, {:.3f}), pt={:.3f}, eta={:.3f}, phi={:.3f}, ID={}".format(S.daughter(d).vx(),S.daughter(d).vy(),S.daughter(d).vz(),S.daughter(d).pt(),S.daughter(d).eta(),S.daughter(d).phi(), S.daughter(d).pdgId())
+        print "Gen Leptons"
+        for l in genLeptons:
+            print "    pt={:.3f}, eta={:.3f}, phi={:.3f}, ID={:.3f}, status={}".format(l.pt(), l.eta(), l.phi(), l.pdgId(), l.status())
+        print "Gen Photons"
+        for g in genPhotons:
+            print "    pt={:.3f}, eta={:.3f}, phi={:.3f}, mother={}, status={}, vertex=({:.3f},{:.3f},{:.3f})".format(g.pt(),g.eta(),g.phi(),g.mother().pdgId(),g.status(),g.vx(),g.vy(),g.vz())
+        print "Reco photons"
+        for p in recoPhotons:
+            print "   ",
+            print p
+        print "Reco leptons"
+        for l in recoLeptons:
+            print "   ",
+            print l
 
+        
     def process(self, event):
         self.readCollections(event.input)
 
@@ -146,6 +159,7 @@ class VHGGBuilder(Analyzer):
             if not overlap:
                 goodPhotons.append(x)
 
+        Zees = filter(lambda x: abs(x.leg1.pdgId())==11, self.makeZ(leptons))
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
@@ -176,7 +190,7 @@ class VHGGBuilder(Analyzer):
                # bestX = max(goodXs,key=lambda x: x.leg1.pt()+x.leg2.pt())
                 bestX = min(goodXs, key = lambda x: (x.p4()+bestZ.p4()).pt())
                 bestZX = Pair(bestZ,bestX)
-                bestZX.otherLeptons = len(goodLeptons)-2
+                bestZX.otherLeptons = len(leptons)-2
                 bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
                 bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg1.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg1.phi())))
                 bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg2.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg2.phi())))
@@ -184,20 +198,12 @@ class VHGGBuilder(Analyzer):
                 nZPairs+=1
 
                 if debug:
-                    self.log(signal, genLeptons)
+                    self.log(signal, genLeptons, genPhotons, leptons, photons)
                     print "ZX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestZX.leg2.vertex15.vertex[0],bestZX.leg2.vertex15.vertex[1],bestZX.leg2.vertex15.vertex[2], bestZX.leg2.vertex15.valid)
                     print "X Photons:\n   ",
                     print bestZX.leg2.leg1
                     print "   ",
                     print bestZX.leg2.leg2
-                    print "Gen Photons"
-                    for g in genPhotons:
-                        print "    vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, energy={:.2f}, mother={}".format(g.vx(),g.vy(),g.vz(),g.pt(),g.eta(),g.phi(),g.energy(),g.mother().pdgId())
-                    print "Reco photons"
-                    for p in photons:
-                        print "    ",
-                        print p
-                    
                     import pdb
                     pdb.set_trace()
 
@@ -221,7 +227,7 @@ class VHGGBuilder(Analyzer):
                 #                bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
                 bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestZXX = ZXX(bestZ, bestXX)
-                bestZXX.otherLeptons = len(goodLeptons) - 2
+                bestZXX.otherLeptons = len(leptons) - 2
                 bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
                 event.ZXX.append(bestZXX)
                 nZPairs+=1
@@ -246,10 +252,10 @@ class VHGGBuilder(Analyzer):
                 #                bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
                 bestX = min(goodXs, key = lambda x: (x.p4()+bestW.p4()).pt())
                 bestWX = Pair(bestW, bestX)
-                bestWX.otherLeptons = len(goodLeptons) -1
+                bestWX.otherLeptons = len(leptons) -1
                 bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(),bestX.leg1.phi())
                 bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(),bestX.leg2.phi())
-
+                bestWX.hasZee = (len(Zees) > 0)
 
                 # Check for electrons from z's misID'd as photons
                 misID = 0
@@ -279,20 +285,12 @@ class VHGGBuilder(Analyzer):
                 
                 event.WX.append(bestWX)
                 if debug:
-                    self.log(signal, genLeptons)
+                    self.log(signal, genLeptons, genPhotons, leptons, photons)
                     print "WX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWX.leg2.vertex15.vertex[0],bestWX.leg2.vertex15.vertex[1],bestWX.leg2.vertex15.vertex[2], bestWX.leg2.vertex15.valid)
                     print "X Photons:\n   ",
                     print bestWX.leg2.leg1
                     print "   ",
                     print bestWX.leg2.leg2
-                    print "Gen Photons"
-                    for g in genPhotons:
-                        print "    vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, energy={:.2f}, mother={}".format(g.vx(),g.vy(),g.vz(),g.pt(),g.eta(),g.phi(),g.energy(),g.mother().pdgId())
-                    print "Reco photons"
-                    for p in photons:
-                        print "    ",
-                        print p
-                    
                     import pdb
                     pdb.set_trace()
 
@@ -316,14 +314,15 @@ class VHGGBuilder(Analyzer):
                 sortedXXs = sorted(goodXXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
                 bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestWXX = WXX(bestW, bestXX)
-                bestWXX.otherLeptons = len(goodLeptons) - 1
+                bestWXX.otherLeptons = len(leptons) - 1
+                bestWXX.hasZee = (len(Zees) > 0)
                 bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
                 bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
                 bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
                 bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
                 event.WXX.append(bestWXX)
                 if debug:
-                    self.log(signal, genWs)
+                    self.log(signal, genLeptons, genPhotons, leptons, photons)
                     print "X1 Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWXX.XX.x1.vertex15.vertex[0],bestWXX.XX.x1.vertex15.vertex[1],bestWXX.XX.x1.vertex15.vertex[2], bestWXX.XX.x1.vertex15.valid)
                     print "X2 Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWXX.XX.x2.vertex15.vertex[0],bestWXX.XX.x2.vertex15.vertex[1],bestWXX.XX.x2.vertex15.vertex[2], bestWXX.XX.x2.vertex15.valid)
                     print "X1 Photons:\n   ",
@@ -335,12 +334,5 @@ class VHGGBuilder(Analyzer):
                     print "   ",
                     print bestWXX.XX.x1.leg2
                     print "Gen Photons"
-                    for g in genPhotons:
-                        print "    vertex=({:.2f}, {:.2f}, {:.2f}), pt={:.2f}, eta={:.2f}, phi={:.2f}, energy={:.2f}, mother={}".format(g.vx(),g.vy(),g.vz(),g.pt(),g.eta(),g.phi(),g.energy(),g.mother().pdgId())
-                    print "Reco photons"
-                    for p in photons:
-                        print "    ",
-                        print p
-                    
                     import pdb
                     pdb.set_trace()
