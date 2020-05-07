@@ -13,7 +13,7 @@ from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
-debug = True
+debug = False
 
 class VHGGBuilder(Analyzer):
 
@@ -146,10 +146,8 @@ class VHGGBuilder(Analyzer):
         goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
         photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
         gen = event.genParticles
-        genPhotons = filter(lambda x: x.pdgId() == 22, gen)
+        genPhotons = filter(lambda x: x.pdgId() == 22 and x.status()==1, gen)
         genWs = filter(lambda x: x.pdgId() == 24 and x.numberOfDaughters()==2, gen)
-#        import pdb
-#        pdb.set_trace()
         goodPhotons = []
         for x in photons:
             overlap = False
@@ -167,23 +165,12 @@ class VHGGBuilder(Analyzer):
         genLeptons = filter(lambda x: abs(x.pdgId())==11 or abs(x.pdgId())==13, gen)
         signal = filter(lambda x: abs(x.pdgId())==9000006, gen)
         signalPhotons = filter(lambda x: abs(x.mother().pdgId())==9000006, genPhotons)
-        event.GenPhoton = signalPhotons
+        event.GenPhoton = genPhotons
         # Make ZX/ZXX Pairs first
         nZPairs = 0
         if len(Zs)>0:
             bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
             goodXs = Xs
-#            goodXs=[]
-#             Select non overlapping Xs
-#            for X in Xs:
-#                overlap=False
-#                for l in [bestZ.leg1,bestZ.leg2]:
-#                    for g in [X.leg1,X.leg2]:
-#                        if deltaR(l.eta(),l.phi(),g.eta(),g.phi())<0.5:
-#                            overlap=True
-#                            break
-#                if not overlap:
-#                    goodXs.append(X)
 
             # Pair Z to best X
             if len(goodXs)>0:
@@ -209,18 +196,7 @@ class VHGGBuilder(Analyzer):
 
                 
             goodXXs = XXs
-            # Repeat for XX pairs
-#            goodXXs = []
-#            for XX in XXs:
-#                overlap = False
-#                for l in [bestZ.leg1, bestZ.leg2]:
-#                    for X in [XX.x1, XX.x2]:
-#                        for g in [X.leg1, X.leg2]:
-#                            if deltaR(l.eta(), l.phi(), g.eta(), g.phi()) < 0.5:
-#                                overlap = True
-#                                break
-#                if not overlap:
-#                    goodXXs.append(XX)
+
             #Pair best XX to best Z
             if len(goodXXs) > 0:
                 sortedXXs = sorted(goodXXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
@@ -237,16 +213,6 @@ class VHGGBuilder(Analyzer):
         if len(Ws) > 0 and nZPairs == 0:
             bestW = max(Ws, key = lambda x: x.leg1.pt())
             goodXs = Xs
-#            goodXs = []
-#            for X in Xs:
-#                for W in Ws:
-#                    overlap = False
-#                    for g in [X.leg1, X.leg2]:
-#                        if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
-#                            overlap = True
-#                            break
-#                if not overlap:
-#                    goodXs.append(X)
                         
             if len(goodXs) > 0:
                 #                bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
@@ -296,17 +262,6 @@ class VHGGBuilder(Analyzer):
 
             goodXXs = XXs
 
-#            goodXXs = []
-#            for XX in XXs:
-#                overlap = False
-#                for W in Ws:
-#                    for X in [XX.x1, XX.x2]:
-#                        for g in [X.leg1, X.leg2]:
-#                            if deltaR(W.leg1.eta(), W.leg1.phi(), g.eta(), g.phi()) < 0.5:
-#                                overlap = True
-#                                break
-#                if not overlap:
-#                    goodXXs.append(XX)
 
             if len(goodXXs) > 0:
                 #bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())

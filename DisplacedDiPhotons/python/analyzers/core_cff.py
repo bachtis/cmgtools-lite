@@ -149,14 +149,14 @@ lepAna = cfg.Analyzer(
     loose_muon_isoCut = lambda x:True,
     # inclusive very loose electron selection
     inclusive_electron_id  = "",
-    inclusive_electron_pt  = 35.0,
+    inclusive_electron_pt  = 10.0,
     inclusive_electron_eta = 2.5,
     inclusive_electron_dxy = 0.2,
     inclusive_electron_dz  = 0.2,
     inclusive_electron_lostHits = 1.0,
     # loose electron selection
     loose_electron_id     = "",
-    loose_electron_pt     = 35.0,
+    loose_electron_pt     = 10.0,
     loose_electron_eta    = 2.5,
     loose_electron_dxy    = 0.2,
     loose_electron_dz     = 0.2,

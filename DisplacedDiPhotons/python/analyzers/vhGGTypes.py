@@ -83,7 +83,7 @@ WXType = NTupleObjectType("WXType", baseObjectTypes=[], variables = [
     NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
     NTupleVariable("misID", lambda x: x.misID, int),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
-    NTupleVariable("hasZee", lambda x: x.hasZee, int),
+    NTupleVariable("ZeeVeto", lambda x: x.hasZee, int),
 ])
 
 ZXXType = NTupleObjectType("ZXXType", baseObjectTypes=[], variables = [
@@ -111,4 +111,5 @@ genType = NTupleObjectType("genType", baseObjectTypes=[], variables = [
     NTupleVariable("vx", lambda x: x.vx(), float),
     NTupleVariable("vy", lambda x: x.vy(), float),
     NTupleVariable("vz", lambda x: x.vz(), float),
+    NTupleVariable("motherID", lambda x:x.mother().pdgId(), int)
 ])
