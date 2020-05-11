@@ -145,9 +145,17 @@ class VHGGBuilder(Analyzer):
         leptons = filter(lambda x: x.pt() > 0, event.selectedLeptons)
         goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
         photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
-        gen = event.genParticles
+        
+        gen = []
+        if self.cfg_comp.isMC:
+            gen = event.genParticles
         genPhotons = filter(lambda x: x.pdgId() == 22 and x.status()==1, gen)
         genWs = filter(lambda x: x.pdgId() == 24 and x.numberOfDaughters()==2, gen)
+        genLeptons = filter(lambda x: abs(x.pdgId())==11 or abs(x.pdgId())==13, gen)
+        signal = filter(lambda x: abs(x.pdgId())==9000006, gen)
+        signalPhotons = filter(lambda x: abs(x.mother().pdgId())==9000006, genPhotons)
+        event.GenPhoton = genPhotons
+
         goodPhotons = []
         for x in photons:
             overlap = False
@@ -162,10 +170,6 @@ class VHGGBuilder(Analyzer):
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
         XXs = self.makeXPair(goodPhotons)
-        genLeptons = filter(lambda x: abs(x.pdgId())==11 or abs(x.pdgId())==13, gen)
-        signal = filter(lambda x: abs(x.pdgId())==9000006, gen)
-        signalPhotons = filter(lambda x: abs(x.mother().pdgId())==9000006, genPhotons)
-        event.GenPhoton = genPhotons
         # Make ZX/ZXX Pairs first
         nZPairs = 0
         if len(Zs)>0:
@@ -226,27 +230,22 @@ class VHGGBuilder(Analyzer):
                 # Check for electrons from z's misID'd as photons
                 misID = 0
                 if abs(bestW.leg1.pdgId()) == 11:
-                    for l in leptons:
-                        if abs(l.pdgId()) != 11 or bestW.leg1.charge()+l.charge()!=0:
-                            continue
-                        for x in [bestX.leg1, bestX.leg2]:
-                            newP4 = bestW.leg1.p4()+l.p4() + x.p4(2)
-                            mass = newP4.mass()
-                            if mass < 100 and mass > 80:
-                                misID = 1
-                        newP4 = bestW.leg1.p4() + l.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
-                        mass = newP4.mass()
-                        if mass < 100 and mass > 80:
-                            misID = 1
-                    for x in [bestX.leg1, bestX.leg2]:
-                        newP4 = bestW.leg1.p4() + x.p4(2)
-                        mass = newP4.mass()
-                        if mass < 100 and mass > 80:
-                            misID = 1
-                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                    #Check first photon
+                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2)
                     mass = newP4.mass()
                     if mass < 100 and mass > 80:
                         misID = 1
+                    #Check 2nd Photon
+                    newP4 = bestW.leg1.p4() + bestX.leg2.p4(2)
+                    mass = newP4.mass()
+                    if mass < 100 and mass > 80:
+                        misID = 2
+                    #Check both photons
+                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                    mass = newP4.mass()
+                    if mass < 100 and mass > 80:
+                        misID = 3
+
                 bestWX.misID = misID
                 
                 event.WX.append(bestWX)

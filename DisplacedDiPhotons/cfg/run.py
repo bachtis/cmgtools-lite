@@ -87,8 +87,8 @@ from CMGTools.DisplacedDiPhotons.analyzers.core_cff import *
 from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
 
 
-selectedComponents = mcSamples
-#selectedComponents = dataSamples
+#selectedComponents = mcSamples
+selectedComponents = dataSamples
 
 
 
@@ -114,7 +114,7 @@ triggerFlagsAna.triggerBits ={
 
 
 #-------- HOW TO RUN
-test = 1
+test = 0
 if test==1:
     # test a single component, using a single thread.
     selectedComponents = [selectedComponents[0]]
