@@ -1,5 +1,5 @@
 import math
-
+import ROOT
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
 
 class XPair(object):

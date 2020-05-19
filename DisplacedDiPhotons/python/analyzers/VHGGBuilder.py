@@ -58,8 +58,6 @@ class VHGGBuilder(Analyzer):
         return Xs
     def makeXPair(self, photons):
         XXs = []
-        if len(photons) < 4:
-            return []
         # Loop over 4 photons to make XXs
         for g1,g2,g3,g4 in itertools.combinations(photons, 4):
             X12 = PhotonPair(g1, g2)
@@ -136,6 +134,7 @@ class VHGGBuilder(Analyzer):
 
         
     def process(self, event):
+
         self.readCollections(event.input)
 
         event.ZX=[]
@@ -170,16 +169,16 @@ class VHGGBuilder(Analyzer):
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
         XXs = self.makeXPair(goodPhotons)
+        
         # Make ZX/ZXX Pairs first
         nZPairs = 0
         if len(Zs)>0:
             bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-            goodXs = Xs
 
             # Pair Z to best X
-            if len(goodXs)>0:
+            if len(Xs)>0:
                # bestX = max(goodXs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-                bestX = min(goodXs, key = lambda x: (x.p4()+bestZ.p4()).pt())
+                bestX = min(Xs, key = lambda x: (x.p4()+bestZ.p4()).pt())
                 bestZX = Pair(bestZ,bestX)
                 bestZX.otherLeptons = len(leptons)-2
                 bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
@@ -199,11 +198,10 @@ class VHGGBuilder(Analyzer):
                     pdb.set_trace()
 
                 
-            goodXXs = XXs
 
             #Pair best XX to best Z
-            if len(goodXXs) > 0:
-                sortedXXs = sorted(goodXXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+            if len(XXs) > 0:
+                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
                 #                bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
                 bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestZXX = ZXX(bestZ, bestXX)
@@ -216,11 +214,10 @@ class VHGGBuilder(Analyzer):
         # If no Zs, search for Ws
         if len(Ws) > 0 and nZPairs == 0:
             bestW = max(Ws, key = lambda x: x.leg1.pt())
-            goodXs = Xs
                         
-            if len(goodXs) > 0:
+            if len(Xs) > 0:
                 #                bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
-                bestX = min(goodXs, key = lambda x: (x.p4()+bestW.p4()).pt())
+                bestX = min(Xs, key = lambda x: (x.p4()+bestW.p4()).pt())
                 bestWX = Pair(bestW, bestX)
                 bestWX.otherLeptons = len(leptons) -1
                 bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(),bestX.leg1.phi())
@@ -258,14 +255,12 @@ class VHGGBuilder(Analyzer):
                     print bestWX.leg2.leg2
                     import pdb
                     pdb.set_trace()
+                    
 
-            goodXXs = XXs
-
-
-            if len(goodXXs) > 0:
+            if len(XXs) > 0:
                 #bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
                 #bestWXX = WXX(bestW, bestXX)
-                sortedXXs = sorted(goodXXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
+                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
                 bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestWXX = WXX(bestW, bestXX)
                 bestWXX.otherLeptons = len(leptons) - 1
@@ -290,3 +285,4 @@ class VHGGBuilder(Analyzer):
                     print "Gen Photons"
                     import pdb
                     pdb.set_trace()
+
