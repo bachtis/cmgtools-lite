@@ -13,7 +13,7 @@ from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
-debug = False
+debug = True
 
 class VHGGBuilder(Analyzer):
 
@@ -227,23 +227,24 @@ class VHGGBuilder(Analyzer):
 
                 # Check for electrons from z's misID'd as photons
                 misID = 0
+                masses = {}
                 if abs(bestW.leg1.pdgId()) == 11:
                     #Check first photon
                     newP4 = bestW.leg1.p4() + bestX.leg1.p4(2)
                     mass = newP4.mass()
-                    if mass < 100 and mass > 80:
-                        misID = 1
+                    masses[1] = mass
                     #Check 2nd Photon
                     newP4 = bestW.leg1.p4() + bestX.leg2.p4(2)
                     mass = newP4.mass()
-                    if mass < 100 and mass > 80:
-                        misID = 2
+                    masses[2] = mass
                     #Check both photons
                     newP4 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
                     mass = newP4.mass()
-                    if mass < 100 and mass > 80:
-                        misID = 3
+                    masses[3] = mass
 
+                    misID = min(masses, key = lambda x: abs(masses[x]-90))
+                    if abs(masses[misID] - 90) > 10:
+                        misID = 0
                 bestWX.misID = misID
                 
                 event.WX.append(bestWX)
