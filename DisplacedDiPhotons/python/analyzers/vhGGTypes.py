@@ -82,6 +82,9 @@ WXType = NTupleObjectType("WXType", baseObjectTypes=[], variables = [
     NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1, float),
     NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
     NTupleVariable("misID", lambda x: x.misID, int),
+    NTupleVariable("mass_l1g1", lambda x: (x.leg1.leg1.p4()+x.leg2.leg1.p4(2)).mass(), float),
+    NTupleVariable("mass_l1g2", lambda x: (x.leg1.leg1.p4()+x.leg2.leg2.p4(2)).mass(), float),
+    NTupleVariable("mass_l1X", lambda x: (x.leg1.leg1.p4()+x.leg2.p4()).mass(), float),
     NTupleVariable("otherLeptons", lambda x: x.otherLeptons, int),
     NTupleVariable("ZtoEEVeto", lambda x: x.hasZee, int),
 ])

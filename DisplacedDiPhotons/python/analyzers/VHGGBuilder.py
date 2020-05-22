@@ -126,7 +126,8 @@ class VHGGBuilder(Analyzer):
         print "Reco photons"
         for p in recoPhotons:
             print "   ",
-            print p
+            print p,
+            print "mcMatchId={}, mcMotherId={}, MVANonTrigV1Values={:.3f}, hasPixelSeed={}, passElectronVeto={}".format(p.mcMatchId,p.mcMotherId,p.userFloat("PhotonMVAEstimatorRun2Spring16NonTrigV1Values"),p.hasPixelSeed(), p.passElectronVeto())
         print "Reco leptons"
         for l in recoLeptons:
             print "   ",
