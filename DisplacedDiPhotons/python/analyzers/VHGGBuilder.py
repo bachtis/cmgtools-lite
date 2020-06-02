@@ -13,7 +13,7 @@ from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
 
-debug = True
+debug = False
 
 class VHGGBuilder(Analyzer):
 
@@ -144,7 +144,7 @@ class VHGGBuilder(Analyzer):
         event.WXX = []
         leptons = filter(lambda x: x.pt() > 0, event.selectedLeptons)
         goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
-        photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
+        photons = filter(lambda x: x.pt()>0 and x.relIso<.1,event.selectedPhotons)
         
         gen = []
         if self.cfg_comp.isMC:
