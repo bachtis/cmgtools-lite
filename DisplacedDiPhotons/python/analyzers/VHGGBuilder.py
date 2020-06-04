@@ -23,6 +23,7 @@ class VHGGBuilder(Analyzer):
 
     def declareHandles(self):
         super(VHGGBuilder, self).declareHandles()
+        self.handles['packed'] = AutoHandle('packedPFCandidates', 'std::vector<pat::PackedCandidate>')
 
     def makeW(self,leptons,met):
         Ws=[]
@@ -111,6 +112,80 @@ class VHGGBuilder(Analyzer):
 
         return flag
 
+
+    def makeZXs(self, Zs, Xs):
+        ZXs = []
+        if len(Zs) > 0:
+            #Select best Z candidate
+            bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
+            
+            #Pair best Z to best X:
+            if len(Xs) > 0:
+                #Select best X by balancing momentum with lepton
+                bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
+                bestZX = Pair(bestZ, bestX)
+                bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
+                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
+                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
+                ZXs.append(bestZX)
+            
+        return ZXs
+
+    def makeZXXs(self, Zs, XXs):
+        ZXXs = []
+        if len(Zs) > 0:
+            bestZ = max(Zs, key = lambda x: x.leg1.pt()+x.leg2.pt())
+            
+            if len(XXs) > 0:
+                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+                bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+                bestZXX = ZXX(bestZ, bestXX)
+                bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
+                ZXXs.append(bestZXX)
+        return ZXXs
+
+
+    def makeWXs(self, Ws, Xs):
+        WXs = []
+        if len(Ws) > 0:
+            bestW = max(Ws, key = lambda x: x.leg1.pt())
+            
+            if len(Xs) > 0:
+                bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
+                bestWX = Pair(bestW, bestX)
+                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
+                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
+                misID = 0
+                masses = {}
+                if abs(bestW.leg1.pdgId()) == 11:
+                    p4_1 = bestW.leg1.p4() + bestX.leg1.p4(2)
+                    masses[1] = p4_1.mass()
+                    p4_2 = bestW.leg1.p4() + bestX.leg2.p4(2)
+                    masses[2] = p4_2.mass()
+                    p4_3 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                    masses[3] = p4_3.mass()
+                    misID = min(masses, key = lambda x: abs(masses[x] - 90))
+                    if abs(masses[misID] - 90) > 10:
+                        misID = 0
+                bestWX.misID = misID
+                WXs.append(bestWX)
+        return WXs
+
+    def makeWXXs(self, Ws, XXs):
+        WXXs = []
+        if len(Ws) > 0:
+            bestW = max(Ws, key = lambda x: x.leg1.pt())
+            
+            if len(XXs) > 0:
+                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
+                bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+                bestWXX = WXX(bestW, bestXX)
+                bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
+                bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
+                bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
+                bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
+                WXXs.append(bestWXX)
+        return WXXs
         
     def log(self, signal, genLeptons, genPhotons, recoLeptons, recoPhotons):
         for S in signal:
@@ -138,14 +213,22 @@ class VHGGBuilder(Analyzer):
 
         self.readCollections(event.input)
 
+        pfCands = self.handles['packed'].product()
+        pfPhotons = filter(lambda x: x.pdgId()==22, pfCands)
+
         event.ZX=[]
         event.WX=[]
         event.ZXX = []
         event.WXX = []
+        event.looseZX = []
+        event.looseWX = []
+        event.looseZXX = []
+        event.looseWXX = []
         leptons = filter(lambda x: x.pt() > 0, event.selectedLeptons)
         goodLeptons = filter(lambda x: x.relIso03 < .1, leptons)
-        photons = filter(lambda x: x.pt()>0 and x.relIso<.1,event.selectedPhotons)
+        photons = filter(lambda x: x.pt()>0,event.selectedPhotons)
         
+        #Get Gen info
         gen = []
         if self.cfg_comp.isMC:
             gen = event.genParticles
@@ -165,6 +248,16 @@ class VHGGBuilder(Analyzer):
             if not overlap:
                 goodPhotons.append(x)
 
+        loosePhotons = []
+        for x in pfPhotons:
+            overlap = False
+            for l in goodLeptons:
+                if deltaR(l.eta(), l.phi(),  x.eta(), x.phi()) < 0.3:
+                    overlap = True
+                    break
+            if not overlap:
+                loosePhotons.append(x)
+
         Zees = filter(lambda x: abs(x.leg1.pdgId())==11, self.makeZ(leptons))
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
@@ -172,119 +265,27 @@ class VHGGBuilder(Analyzer):
         XXs = self.makeXPair(goodPhotons)
         
         # Make ZX/ZXX Pairs first
-        nZPairs = 0
-        if len(Zs)>0:
-            bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
+        if len(Zs) > 0:
 
-            # Pair Z to best X
-            if len(Xs)>0:
-               # bestX = max(goodXs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-                bestX = min(Xs, key = lambda x: (x.p4()+bestZ.p4()).pt())
-                bestZX = Pair(bestZ,bestX)
-                bestZX.otherLeptons = len(leptons)-2
-                bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
-                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg1.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg1.phi())))
-                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(),bestX.leg2.phi())),abs(deltaPhi(bestZ.leg2.phi(),bestX.leg2.phi())))
-                event.ZX.append(bestZX)
-                nZPairs+=1
-
-                if debug:
-                    self.log(signal, genLeptons, genPhotons, leptons, photons)
-                    print "ZX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestZX.leg2.vertex15.vertex[0],bestZX.leg2.vertex15.vertex[1],bestZX.leg2.vertex15.vertex[2], bestZX.leg2.vertex15.valid)
-                    print "X Photons:\n   ",
-                    print bestZX.leg2.leg1
-                    print "   ",
-                    print bestZX.leg2.leg2
-                    import pdb
-                    pdb.set_trace()
-
-                
-
-            #Pair best XX to best Z
-            if len(XXs) > 0:
-                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
-                #                bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
-                bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
-                bestZXX = ZXX(bestZ, bestXX)
-                bestZXX.otherLeptons = len(leptons) - 2
-                bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
-                event.ZXX.append(bestZXX)
-                nZPairs+=1
-
-
-        # If no Zs, search for Ws
-        if len(Ws) > 0 and nZPairs == 0:
-            bestW = max(Ws, key = lambda x: x.leg1.pt())
-                        
-            if len(Xs) > 0:
-                #                bestX = max(goodXs, key=lambda x: x.leg1.pt() + x.leg2.pt())
-                bestX = min(Xs, key = lambda x: (x.p4()+bestW.p4()).pt())
-                bestWX = Pair(bestW, bestX)
-                bestWX.otherLeptons = len(leptons) -1
-                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(),bestX.leg1.phi())
-                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(),bestX.leg2.phi())
-                bestWX.hasZee = (len(Zees) > 0)
-
-                # Check for electrons from z's misID'd as photons
-                misID = 0
-                masses = {}
-                if abs(bestW.leg1.pdgId()) == 11:
-                    #Check first photon
-                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2)
-                    mass = newP4.mass()
-                    masses[1] = mass
-                    #Check 2nd Photon
-                    newP4 = bestW.leg1.p4() + bestX.leg2.p4(2)
-                    mass = newP4.mass()
-                    masses[2] = mass
-                    #Check both photons
-                    newP4 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
-                    mass = newP4.mass()
-                    masses[3] = mass
-
-                    misID = min(masses, key = lambda x: abs(masses[x]-90))
-                    if abs(masses[misID] - 90) > 10:
-                        misID = 0
-                bestWX.misID = misID
-                
-                event.WX.append(bestWX)
-                if debug:
-                    self.log(signal, genLeptons, genPhotons, leptons, photons)
-                    print "WX Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWX.leg2.vertex15.vertex[0],bestWX.leg2.vertex15.vertex[1],bestWX.leg2.vertex15.vertex[2], bestWX.leg2.vertex15.valid)
-                    print "X Photons:\n   ",
-                    print bestWX.leg2.leg1
-                    print "   ",
-                    print bestWX.leg2.leg2
-                    import pdb
-                    pdb.set_trace()
-                    
-
-            if len(XXs) > 0:
-                #bestXX = max(goodXXs, key = lambda x: x.x1.pt()+x.x2.pt())
-                #bestWXX = WXX(bestW, bestXX)
-                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
-                bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
-                bestWXX = WXX(bestW, bestXX)
-                bestWXX.otherLeptons = len(leptons) - 1
-                bestWXX.hasZee = (len(Zees) > 0)
-                bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
-                bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
-                bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
-                bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
-                event.WXX.append(bestWXX)
-                if debug:
-                    self.log(signal, genLeptons, genPhotons, leptons, photons)
-                    print "X1 Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWXX.XX.x1.vertex15.vertex[0],bestWXX.XX.x1.vertex15.vertex[1],bestWXX.XX.x1.vertex15.vertex[2], bestWXX.XX.x1.vertex15.valid)
-                    print "X2 Vertex: ({:.2f}, {:.2f}, {:.2f}) valid={}".format(bestWXX.XX.x2.vertex15.vertex[0],bestWXX.XX.x2.vertex15.vertex[1],bestWXX.XX.x2.vertex15.vertex[2], bestWXX.XX.x2.vertex15.valid)
-                    print "X1 Photons:\n   ",
-                    print bestWXX.XX.x1.leg1
-                    print "   ",
-                    print bestWXX.XX.x2.leg2
-                    print "X2 Photons:\n   ",
-                    print bestWXX.XX.x2.leg1
-                    print "   ",
-                    print bestWXX.XX.x1.leg2
-                    print "Gen Photons"
-                    import pdb
-                    pdb.set_trace()
-
+            ZXs = self.makeZXs(Zs, Xs)
+            for zx in ZXs:
+                zx.otherLeptons = len(leptons) - 2
+                event.ZX.append(zx)
+            
+            ZXXs = self.makeZXXs(Zs, XXs)
+            for zxx in ZXXs:
+                zxx.otherLeptons = len(leptons) - 2
+                event.ZXX.append(zxx)
+        
+        elif len(Ws) > 0:
+            WXs = self.makeWXs(Ws, Xs)
+            for wx in WXs:
+                wx.otherLeptons = len(leptons) - 1
+                wx.hasZee = (len(Zees) > 0)
+                event.WX.append(wx)
+            
+            WXXs = self.makeWXXs(Ws, XXs)
+            for wxx in WXXs:
+                wxx.otherLeptons = len(leptons) - 1
+                wxx.hasZee = (len(Zees) > 0)
+                event.WXX.append(wxx)
