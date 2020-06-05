@@ -21,6 +21,13 @@ displacementType = NTupleObjectType("xVertex", baseObjectTypes = [], variables =
     NTupleVariable("valid", lambda x: x.valid, int),
 ])
 
+LoosePhotonType = NTupleObjectType("LoosePhoton", baseObjectTypes=[fourVectorType], variables = [
+    NTupleVariable("x", lambda x: x.caloPosition.x(), float),
+    NTupleVariable("y", lambda x: x.caloPosition.y(), float),
+    NTupleVariable("z", lambda x: x.caloPosition.z(), float),
+    NTupleVariable("energy", lambda x: x.energy, float)
+])
+
 
 ZType = NTupleObjectType("PairType", baseObjectTypes=[fourVectorType], variables = [
     NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
@@ -115,4 +122,32 @@ genType = NTupleObjectType("genType", baseObjectTypes=[], variables = [
     NTupleVariable("vy", lambda x: x.vy(), float),
     NTupleVariable("vz", lambda x: x.vz(), float),
     NTupleVariable("motherID", lambda x:x.mother().pdgId(), int)
+])
+
+
+LooseXType = NTupleObjectType("LoosePhotonPair", baseObjectTypes=[fourVectorType], variables = [
+    NTupleVariable("deltaPhi",   lambda x : x.deltaPhi(), float),       
+    NTupleVariable("deltaR",   lambda x : x.deltaR(), float),       
+    NTupleSubObject("g1",  lambda x : x.leg1,LoosePhotonType),
+    NTupleSubObject("g2",  lambda x : x.leg2,LoosePhotonType),
+    NTupleSubObject("vertex10", lambda x: x.vertex10, displacementType),
+    NTupleSubObject("vertex15", lambda x: x.vertex15, displacementType),
+    NTupleSubObject("vertex20", lambda x: x.vertex20, displacementType),
+    NTupleSubObject("vertex30", lambda x: x.vertex30, displacementType),
+    NTupleSubObject("vertex40", lambda x: x.vertex40, displacementType),
+    NTupleSubObject("vertex50", lambda x: x.vertex50, displacementType),
+    NTupleSubObject("vertex60", lambda x: x.vertex60, displacementType),
+])
+
+
+LooseZXType = NTupleObjectType("LooseZXType", baseObjectTypes=[], variables = [
+    NTupleSubObject("Z",  lambda x : x.leg1,ZType),
+    NTupleSubObject("X",  lambda x : x.leg2,LooseXType),
+    NTupleVariable("deltaPhi_g1", lambda x: x.deltaPhi_g1, float),
+    NTupleVariable("deltaPhi_g2", lambda x: x.deltaPhi_g2, float),
+    NTupleVariable("mass", lambda x: x.m(), float),
+    NTupleVariable("mass_Zg1", lambda x: (x.leg1.p4()+x.leg2.leg1.p4(2)).mass(), float),
+    NTupleVariable("mass_Zg2", lambda x: (x.leg1.p4()+x.leg2.leg2.p4(2)).mass(), float),
+    NTupleVariable("hasFSR", lambda x: x.hasFSR, int),
+    NTupleVariable("otherLeptons",   lambda x : x.otherLeptons, int),          
 ])

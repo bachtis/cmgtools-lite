@@ -417,6 +417,8 @@ VHToNonbb, VHToNonbb_ll,
 # ====== W + Gamma ======
 WGtoLNuG = kreator.makeMCComponent("WGToLNuG", "/WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM", "CMS", ".*root", 1)
 
+WGG = kreator.makeMCComponent("WGG", "/WGG_5f_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM", "CMS", ".*root", 1)
+
 
 # ----------------------------- summary ----------------------------------------
 

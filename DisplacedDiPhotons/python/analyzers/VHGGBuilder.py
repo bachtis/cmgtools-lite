@@ -12,6 +12,9 @@ from CMGTools.VVResonances.tools.Pair import *
 from CMGTools.DisplacedDiPhotons.analyzers.PhotonPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.XPair import *
 from CMGTools.DisplacedDiPhotons.analyzers.xVertex import *
+from CMGTools.DisplacedDiPhotons.analyzers.PFPhoton import *
+from CMGTools.DisplacedDiPhotons.analyzers.LoosePhotonPair import *
+from CMGTools.DisplacedDiPhotons.analyzers.LooseXPair import *
 
 debug = False
 
@@ -57,6 +60,7 @@ class VHGGBuilder(Analyzer):
             Xs.append(X)
             
         return Xs
+
     def makeXPair(self, photons):
         XXs = []
         # Loop over 4 photons to make XXs
@@ -75,6 +79,35 @@ class VHGGBuilder(Analyzer):
             XXs.append(X1324)
             XXs.append(X1423)
         return XXs
+
+    def makeLooseX(self,photons):
+        Xs=[]
+        # Pair photons (TODO: Conversions)
+        for g1,g2 in itertools.combinations(photons,2):
+            X = LoosePhotonPair(g1,g2,1995)
+            Xs.append(X)
+            
+        return Xs
+
+    def makeLooseXPair(self, photons):
+        XXs = []
+        # Loop over 4 photons to make XXs
+        for g1,g2,g3,g4 in itertools.combinations(photons, 4):
+            X12 = LoosePhotonPair(g1, g2)
+            X34 = LoosePhotonPair(g3, g4)
+            X13 = LoosePhotonPair(g1, g3)
+            X24 = LoosePhotonPair(g2, g4)
+            X23 = LoosePhotonPair(g2, g3)
+            X14 = LoosePhotonPair(g1, g4)
+            
+            X1234 = XPair(X12, X34)
+            X1324 = XPair(X13, X24)
+            X1423 = XPair(X14, X23)
+            XXs.append(X1234)
+            XXs.append(X1324)
+            XXs.append(X1423)
+        return XXs
+
 
     def checkFSR_ZX(self, Z,X):
         flag = 0
@@ -250,20 +283,24 @@ class VHGGBuilder(Analyzer):
 
         loosePhotons = []
         for x in pfPhotons:
+            g = PFPhoton(x)
+            import pdb
+            pdb.set_trace()
             overlap = False
             for l in goodLeptons:
                 if deltaR(l.eta(), l.phi(),  x.eta(), x.phi()) < 0.3:
                     overlap = True
                     break
             if not overlap:
-                loosePhotons.append(x)
+                loosePhotons.append(g)
 
         Zees = filter(lambda x: abs(x.leg1.pdgId())==11, self.makeZ(leptons))
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
         XXs = self.makeXPair(goodPhotons)
-        
+        LooseXs = self.makeLooseX(loosePhotons)
+        LooseXXs = self.makeLooseXPair(loosePhotons)
         # Make ZX/ZXX Pairs first
         if len(Zs) > 0:
 
