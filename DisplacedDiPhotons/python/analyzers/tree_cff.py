@@ -24,5 +24,9 @@ vhGGTreeProducer = cfg.Analyzer(
         "ZXX": NTupleCollection("ZXX", ZXXType, 5, help = "ZXX candidates"),
         "WXX": NTupleCollection("WXX", WXXType, 5, help = "WXX candidates"),
         "GenPhoton": NTupleCollection("GenPhoton", genType, 6, help = "MC photons"),
+        "looseZX": NTupleCollection("looseZX", looseZXType, 5, help = "Loose ZX Candidates"),
+        "looseWX": NTupleCollection("looseWX", looseWXType, 5, help = "Loose WX Candidates"),
+        "looseZXX": NTupleCollection("looseZXX", looseZXXType, 5, help = "Loose ZXX Candidates"),
+        "looseWXX": NTupleCollection("looseWXX", looseWXXType, 5, help = "Loose WXX Candidates"),
      }
 )

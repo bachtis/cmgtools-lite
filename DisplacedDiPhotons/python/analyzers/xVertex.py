@@ -24,6 +24,8 @@ class xVertex(object):
     def getRotAxis(self):
         v1 = self.v1
         v3 = v1.Cross(self.v2)
+        if v3.Mag() == 0:
+            self.valid = 0
         v3.SetMag(1.0)
         ez = ROOT.TVector3(0,0,1.0)
         return v3.Cross(ez)
@@ -105,11 +107,11 @@ class xVertex(object):
         v2 = self.v2
         axis = self.getRotAxis()
         theta = self.getRotAngle()
-        v1.Rotate(theta, axis)
-        v2.Rotate(theta, axis)
         phi = self.getPhi()
         if not self.valid:
             return None
+        v1.Rotate(theta, axis)
+        v2.Rotate(theta, axis)
         radius = self.getRadius(v1[0], v2[0], v1[1], v2[1], phi)
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
         stepsPhi = 1000

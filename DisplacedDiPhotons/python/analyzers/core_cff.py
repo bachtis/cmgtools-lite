@@ -246,7 +246,7 @@ photonAna = cfg.Analyzer(
 vhGGSkimmer = cfg.Analyzer(
     Skimmer,
     name='vhGGSkimmer',
-    required = ['ZX','WX','ZXX','WXX']
+    required = ['ZX','WX','ZXX','WXX','looseZX','looseWX','looseZXX','looseWXX']
 )
 
 vhGGAna = cfg.Analyzer(

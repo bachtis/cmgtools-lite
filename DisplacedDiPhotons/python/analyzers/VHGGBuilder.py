@@ -83,16 +83,19 @@ class VHGGBuilder(Analyzer):
     def makeLooseX(self,photons):
         Xs=[]
         # Pair photons (TODO: Conversions)
-        for g1,g2 in itertools.combinations(photons,2):
-            X = LoosePhotonPair(g1,g2,1995)
-            Xs.append(X)
-            
+        if len(photons) < 2:
+            return Xs
+        sortedPhotons = sorted(photons, key = lambda x: x.pt(), reverse = True)
+        Xs.append(LoosePhotonPair(sortedPhotons[0], sortedPhotons[1]))
         return Xs
 
     def makeLooseXPair(self, photons):
         XXs = []
         # Loop over 4 photons to make XXs
-        for g1,g2,g3,g4 in itertools.combinations(photons, 4):
+        if len(photons) < 4:
+            return XXs
+        sortedPhotons = sorted(photons, key = lambda x: x.pt(), reverse = True)
+        for g1,g2,g3,g4 in itertools.combinations(sortedPhotons[0:3], 4):
             X12 = LoosePhotonPair(g1, g2)
             X34 = LoosePhotonPair(g3, g4)
             X13 = LoosePhotonPair(g1, g3)
@@ -123,6 +126,21 @@ class VHGGBuilder(Analyzer):
 
         return flag
 
+    def checkFSR_LooseZX(self, Z, X):
+        flag = 0
+        mz = Z.p4().mass()
+        for g in [X.leg1, X.leg2]:
+            p4New = Z.p4() + g.p4()
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+                flag = 1
+
+        p4Total = Z.p4() + X.p4()
+        if abs(p4Total.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+            flag = 1
+
+        return flag
+
+
     def checkFSR_ZXX(self, Z,XX):
         flag = 0
         mz = Z.p4().mass()
@@ -140,6 +158,29 @@ class VHGGBuilder(Analyzer):
                 flag = 1
         for g1, g2, g3, g4 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],4):
             p4New = Z.p4() + g1.p4(2) + g2.p4(2) + g3.p4(2) + g4.p4(2)
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+                flag = 1
+
+        return flag
+
+
+    def checkFSR_LooseZXX(self, Z,XX):
+        flag = 0
+        mz = Z.p4().mass()
+        for g in [XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2]:
+            p4New = Z.p4() + g.p4()
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+                flag =  1
+        for g1, g2 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],2):
+            p4New = Z.p4() + g1.p4() + g2.p4()
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+                flag = 1
+        for g1, g2, g3 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],3):
+            p4New = Z.p4() + g1.p4() + g2.p4() + g3.p4()
+            if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
+                flag = 1
+        for g1, g2, g3, g4 in itertools.combinations([XX.x1.leg1, XX.x1.leg2, XX.x2.leg1, XX.x2.leg2],4):
+            p4New = Z.p4() + g1.p4() + g2.p4() + g3.p4() + g4.p4()
             if abs(p4New.mass()-91) < abs(mz-91) and abs(p4New.mass()-91) < 15:
                 flag = 1
 
@@ -164,6 +205,25 @@ class VHGGBuilder(Analyzer):
             
         return ZXs
 
+    def makeLooseZXs(self, Zs, Xs):
+        ZXs = []
+        if len(Zs) > 0:
+            #Select best Z candidate
+            bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
+            
+            #Pair best Z to best X:
+            if len(Xs) > 0:
+                #Select best X by balancing momentum with lepton
+                bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
+                bestZX = Pair(bestZ, bestX)
+                bestZX.hasFSR = self.checkFSR_LooseZX(bestZ, bestX)
+                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
+                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
+                ZXs.append(bestZX)
+            
+        return ZXs
+
+
     def makeZXXs(self, Zs, XXs):
         ZXXs = []
         if len(Zs) > 0:
@@ -174,6 +234,20 @@ class VHGGBuilder(Analyzer):
                 bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestZXX = ZXX(bestZ, bestXX)
                 bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
+                ZXXs.append(bestZXX)
+        return ZXXs
+
+
+    def makeLooseZXXs(self, Zs, XXs):
+        ZXXs = []
+        if len(Zs) > 0:
+            bestZ = max(Zs, key = lambda x: x.leg1.pt()+x.leg2.pt())
+            
+            if len(XXs) > 0:
+                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+                bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+                bestZXX = ZXX(bestZ, bestXX)
+                bestZXX.hasFSR = self.checkFSR_LooseZXX(bestZ, bestXX)
                 ZXXs.append(bestZXX)
         return ZXXs
 
@@ -203,6 +277,34 @@ class VHGGBuilder(Analyzer):
                 bestWX.misID = misID
                 WXs.append(bestWX)
         return WXs
+
+    def makeLooseWXs(self, Ws, Xs):
+        WXs = []
+        if len(Ws) > 0:
+            bestW = max(Ws, key = lambda x: x.leg1.pt())
+            
+            if len(Xs) > 0:
+                bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
+                bestWX = Pair(bestW, bestX)
+                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
+                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
+                misID = 0
+                masses = {}
+                if abs(bestW.leg1.pdgId()) == 11:
+                    p4_1 = bestW.leg1.p4() + bestX.leg1.p4()
+                    masses[1] = p4_1.mass()
+                    p4_2 = bestW.leg1.p4() + bestX.leg2.p4()
+                    masses[2] = p4_2.mass()
+                    p4_3 = bestW.leg1.p4() + bestX.leg1.p4() + bestX.leg2.p4()
+                    masses[3] = p4_3.mass()
+                    misID = min(masses, key = lambda x: abs(masses[x] - 90))
+                    if abs(masses[misID] - 90) > 10:
+                        misID = 0
+                bestWX.misID = misID
+                WXs.append(bestWX)
+        return WXs
+
+
 
     def makeWXXs(self, Ws, XXs):
         WXXs = []
@@ -284,8 +386,6 @@ class VHGGBuilder(Analyzer):
         loosePhotons = []
         for x in pfPhotons:
             g = PFPhoton(x)
-            import pdb
-            pdb.set_trace()
             overlap = False
             for l in goodLeptons:
                 if deltaR(l.eta(), l.phi(),  x.eta(), x.phi()) < 0.3:
@@ -313,7 +413,17 @@ class VHGGBuilder(Analyzer):
             for zxx in ZXXs:
                 zxx.otherLeptons = len(leptons) - 2
                 event.ZXX.append(zxx)
-        
+
+            LooseZXs = self.makeLooseZXs(Zs, LooseXs)
+            for zx in LooseZXs:
+                zx.otherLeptons = len(leptons) - 2
+                event.looseZX.append(zx)
+
+            LooseZXXs = self.makeLooseZXXs(Zs, LooseXXs)
+            for zxx in LooseZXXs:
+                zxx.otherLeptons = len(leptons) - 2
+                event.looseZXX.append(zxx)
+
         elif len(Ws) > 0:
             WXs = self.makeWXs(Ws, Xs)
             for wx in WXs:
@@ -326,3 +436,15 @@ class VHGGBuilder(Analyzer):
                 wxx.otherLeptons = len(leptons) - 1
                 wxx.hasZee = (len(Zees) > 0)
                 event.WXX.append(wxx)
+
+            LooseWXs = self.makeLooseWXs(Ws, LooseXs)
+            for wx in LooseWXs:
+                wx.otherLeptons = len(leptons) - 1
+                wx.hasZee = (len(Zees) > 0)
+                event.looseWX.append(wx)
+
+            LooseWXXs = self.makeWXXs(Ws, LooseXXs)
+            for wxx in LooseWXXs:
+                wx.otherLeptons = len(leptons) - 1
+                wx.hasZee = (len(Zees) > 0)
+                event.looseWXXs.append(wxx)
