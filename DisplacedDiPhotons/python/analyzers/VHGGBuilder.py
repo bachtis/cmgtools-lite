@@ -85,6 +85,7 @@ class VHGGBuilder(Analyzer):
         # Pair photons (TODO: Conversions)
         if len(photons) < 2:
             return Xs
+        # Pick highest pt pf photons
         sortedPhotons = sorted(photons, key = lambda x: x.pt(), reverse = True)
         Xs.append(LoosePhotonPair(sortedPhotons[0], sortedPhotons[1]))
         return Xs
@@ -95,6 +96,7 @@ class VHGGBuilder(Analyzer):
         if len(photons) < 4:
             return XXs
         sortedPhotons = sorted(photons, key = lambda x: x.pt(), reverse = True)
+        # Pick highest 4 pt pf photons
         for g1,g2,g3,g4 in itertools.combinations(sortedPhotons[0:3], 4):
             X12 = LoosePhotonPair(g1, g2)
             X34 = LoosePhotonPair(g3, g4)
@@ -111,7 +113,7 @@ class VHGGBuilder(Analyzer):
             XXs.append(X1423)
         return XXs
 
-
+    #Check fsr for ZX candidates
     def checkFSR_ZX(self, Z,X):
         flag = 0
         mz = Z.p4().mass()
@@ -125,7 +127,8 @@ class VHGGBuilder(Analyzer):
             flag = 1
 
         return flag
-
+        
+    # Check fsr for loose (pf) ZX candidates
     def checkFSR_LooseZX(self, Z, X):
         flag = 0
         mz = Z.p4().mass()
@@ -230,7 +233,9 @@ class VHGGBuilder(Analyzer):
             bestZ = max(Zs, key = lambda x: x.leg1.pt()+x.leg2.pt())
             
             if len(XXs) > 0:
+                # Look at z + 4gamma combinations that minimize pt
                 sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+                # Pick best XX by minimizing deltaR between photon pairs
                 bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
                 bestZXX = ZXX(bestZ, bestXX)
                 bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
@@ -393,8 +398,10 @@ class VHGGBuilder(Analyzer):
                     break
             if not overlap:
                 loosePhotons.append(g)
-
+                
+        # Z to ee, used for photon misID cuts
         Zees = filter(lambda x: abs(x.leg1.pdgId())==11, self.makeZ(leptons))
+
         Zs = self.makeZ(goodLeptons)
         Ws = self.makeW(goodLeptons,event.met)
         Xs = self.makeX(goodPhotons)
