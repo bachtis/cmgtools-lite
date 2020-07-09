@@ -25,7 +25,9 @@ loosePhotonType = NTupleObjectType("loosePhoton", baseObjectTypes=[fourVectorTyp
     NTupleVariable("x", lambda x: x.caloPosition.x(), float),
     NTupleVariable("y", lambda x: x.caloPosition.y(), float),
     NTupleVariable("z", lambda x: x.caloPosition.z(), float),
-    NTupleVariable("energy", lambda x: x.energy(), float)
+    NTupleVariable("energy", lambda x: x.energy(), float),
+    NTupleVariable("mcMatch", lambda x: x.mcMatch if getattr(x, "mcMatch", None) else 0, int, mcOnly = True, help = "1 if matched to mc photon, 0 otherwise"),
+    NTupleVariable("mcMotherId", lambda x: x.mcMotherId if getattr(x, "mcMotherId", None) else 0, int, mcOnly = True, help = "pdgId of matched mc photon mother")
 ])
 
 

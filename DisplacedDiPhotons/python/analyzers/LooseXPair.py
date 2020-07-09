@@ -2,7 +2,7 @@ import math
 import ROOT
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
 
-class XPair(object):
+class LooseXPair(object):
     def __init__(self, x1, x2):
         self.x1 = x1
         self.x2 = x2
@@ -41,7 +41,7 @@ class XPair(object):
     def __getattr__(self, name):
         return getattr(self.LV, name)
 
-class ZXX(object):
+'''class ZXX(object):
     def __init__(self, Z, XPair):
         self.Z = Z
         self.XX = XPair
@@ -71,3 +71,4 @@ class WXX(object):
 
     def  __getattr__(self, name):
         return getattr(self.LV, name)
+'''

@@ -105,9 +105,9 @@ class VHGGBuilder(Analyzer):
             X23 = LoosePhotonPair(g2, g3)
             X14 = LoosePhotonPair(g1, g4)
             
-            X1234 = XPair(X12, X34)
-            X1324 = XPair(X13, X24)
-            X1423 = XPair(X14, X23)
+            X1234 = LooseXPair(X12, X34)
+            X1324 = LooseXPair(X13, X24)
+            X1423 = LooseXPair(X14, X23)
             XXs.append(X1234)
             XXs.append(X1324)
             XXs.append(X1423)
@@ -190,142 +190,120 @@ class VHGGBuilder(Analyzer):
         return flag
 
 
-    def makeZXs(self, Zs, Xs):
+    def makeZXs(self, bestZ, Xs):
         ZXs = []
-        if len(Zs) > 0:
-            #Select best Z candidate
-            bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-            
-            #Pair best Z to best X:
-            if len(Xs) > 0:
-                #Select best X by balancing momentum with lepton
-                bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
-                bestZX = Pair(bestZ, bestX)
-                bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
-                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
-                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
-                ZXs.append(bestZX)
+        #Pair best Z to best X:
+        if len(Xs) > 0:
+            #Select best X by balancing momentum with lepton
+            bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
+            bestZX = Pair(bestZ, bestX)
+            bestZX.hasFSR = self.checkFSR_ZX(bestZ, bestX)
+            bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
+            bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
+            ZXs.append(bestZX)
             
         return ZXs
 
-    def makeLooseZXs(self, Zs, Xs):
+    def makeLooseZXs(self, bestZ, Xs):
         ZXs = []
-        if len(Zs) > 0:
-            #Select best Z candidate
-            bestZ = max(Zs,key=lambda x: x.leg1.pt()+x.leg2.pt())
-            
-            #Pair best Z to best X:
-            if len(Xs) > 0:
-                #Select best X by balancing momentum with lepton
-                bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
-                bestZX = Pair(bestZ, bestX)
-                bestZX.hasFSR = self.checkFSR_LooseZX(bestZ, bestX)
-                bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
-                bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
-                ZXs.append(bestZX)
+        #Pair best Z to best X:
+        if len(Xs) > 0:
+            #Select best X by balancing momentum with lepton
+            bestX = min(Xs, key = lambda x: (x.p4() + bestZ.p4()).pt())
+            bestZX = Pair(bestZ, bestX)
+            bestZX.hasFSR = self.checkFSR_LooseZX(bestZ, bestX)
+            bestZX.deltaPhi_g1 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg1.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg1.phi())))
+            bestZX.deltaPhi_g2 = min(abs(deltaPhi(bestZ.leg1.phi(), bestX.leg2.phi())), abs(deltaPhi(bestZ.leg2.phi(), bestX.leg2.phi())))
+            ZXs.append(bestZX)
             
         return ZXs
 
 
-    def makeZXXs(self, Zs, XXs):
+    def makeZXXs(self, bestZ, XXs):
         ZXXs = []
-        if len(Zs) > 0:
-            bestZ = max(Zs, key = lambda x: x.leg1.pt()+x.leg2.pt())
-            
-            if len(XXs) > 0:
-                # Look at z + 4gamma combinations that minimize pt
-                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
-                # Pick best XX by minimizing deltaR between photon pairs
-                bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
-                bestZXX = ZXX(bestZ, bestXX)
-                bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
-                ZXXs.append(bestZXX)
+        if len(XXs) > 0:
+            # Look at z + 4gamma combinations that minimize pt
+            sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+            # Pick best XX by minimizing deltaR between photon pairs
+            bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+            bestZXX = ZXX(bestZ, bestXX)
+            bestZXX.hasFSR = self.checkFSR_ZXX(bestZ, bestXX)
+            ZXXs.append(bestZXX)
         return ZXXs
 
 
-    def makeLooseZXXs(self, Zs, XXs):
+    def makeLooseZXXs(self, bestZ, XXs):
         ZXXs = []
-        if len(Zs) > 0:
-            bestZ = max(Zs, key = lambda x: x.leg1.pt()+x.leg2.pt())
-            
-            if len(XXs) > 0:
-                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
-                bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
-                bestZXX = ZXX(bestZ, bestXX)
-                bestZXX.hasFSR = self.checkFSR_LooseZXX(bestZ, bestXX)
-                ZXXs.append(bestZXX)
+        if len(XXs) > 0:
+            sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestZ.p4()).pt())[0:3]
+            bestXX = min(sortedXXs, key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+            bestZXX = ZXX(bestZ, bestXX)
+            bestZXX.hasFSR = self.checkFSR_LooseZXX(bestZ, bestXX)
+            ZXXs.append(bestZXX)
         return ZXXs
 
 
-    def makeWXs(self, Ws, Xs):
+    def makeWXs(self, bestW, Xs):
         WXs = []
-        if len(Ws) > 0:
-            bestW = max(Ws, key = lambda x: x.leg1.pt())
-            
-            if len(Xs) > 0:
-                bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
-                bestWX = Pair(bestW, bestX)
-                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
-                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
-                misID = 0
-                masses = {}
-                if abs(bestW.leg1.pdgId()) == 11:
-                    p4_1 = bestW.leg1.p4() + bestX.leg1.p4(2)
-                    masses[1] = p4_1.mass()
-                    p4_2 = bestW.leg1.p4() + bestX.leg2.p4(2)
-                    masses[2] = p4_2.mass()
-                    p4_3 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
-                    masses[3] = p4_3.mass()
-                    misID = min(masses, key = lambda x: abs(masses[x] - 90))
-                    if abs(masses[misID] - 90) > 10:
+        if len(Xs) > 0:
+            bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
+            bestWX = Pair(bestW, bestX)
+            bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
+            bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
+            misID = 0
+            masses = {}
+            if abs(bestW.leg1.pdgId()) == 11:
+                p4_1 = bestW.leg1.p4() + bestX.leg1.p4(2)
+                masses[1] = p4_1.mass()
+                p4_2 = bestW.leg1.p4() + bestX.leg2.p4(2)
+                masses[2] = p4_2.mass()
+                p4_3 = bestW.leg1.p4() + bestX.leg1.p4(2) + bestX.leg2.p4(2)
+                masses[3] = p4_3.mass()
+                misID = min(masses, key = lambda x: abs(masses[x] - 90))
+                if abs(masses[misID] - 90) > 10:
                         misID = 0
-                bestWX.misID = misID
-                WXs.append(bestWX)
+            bestWX.misID = misID
+            WXs.append(bestWX)
         return WXs
 
-    def makeLooseWXs(self, Ws, Xs):
+    def makeLooseWXs(self, bestW, Xs):
         WXs = []
-        if len(Ws) > 0:
-            bestW = max(Ws, key = lambda x: x.leg1.pt())
-            
-            if len(Xs) > 0:
-                bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
-                bestWX = Pair(bestW, bestX)
-                bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
-                bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
-                misID = 0
-                masses = {}
-                if abs(bestW.leg1.pdgId()) == 11:
-                    p4_1 = bestW.leg1.p4() + bestX.leg1.p4()
-                    masses[1] = p4_1.mass()
-                    p4_2 = bestW.leg1.p4() + bestX.leg2.p4()
-                    masses[2] = p4_2.mass()
-                    p4_3 = bestW.leg1.p4() + bestX.leg1.p4() + bestX.leg2.p4()
-                    masses[3] = p4_3.mass()
-                    misID = min(masses, key = lambda x: abs(masses[x] - 90))
-                    if abs(masses[misID] - 90) > 10:
-                        misID = 0
-                bestWX.misID = misID
-                WXs.append(bestWX)
+        if len(Xs) > 0:
+            bestX = min(Xs, key = lambda x: (x.p4() + bestW.p4()).pt())
+            bestWX = Pair(bestW, bestX)
+            bestWX.deltaPhi_g1 = deltaPhi(bestW.leg1.phi(), bestX.leg1.phi())
+            bestWX.deltaPhi_g2 = deltaPhi(bestW.leg1.phi(), bestW.leg2.phi())
+            misID = 0
+            masses = {}
+            if abs(bestW.leg1.pdgId()) == 11:
+                p4_1 = bestW.leg1.p4() + bestX.leg1.p4()
+                masses[1] = p4_1.mass()
+                p4_2 = bestW.leg1.p4() + bestX.leg2.p4()
+                masses[2] = p4_2.mass()
+                p4_3 = bestW.leg1.p4() + bestX.leg1.p4() + bestX.leg2.p4()
+                masses[3] = p4_3.mass()
+                misID = min(masses, key = lambda x: abs(masses[x] - 90))
+                if abs(masses[misID] - 90) > 10:
+                    misID = 0
+            bestWX.misID = misID
+            WXs.append(bestWX)
         return WXs
 
 
 
-    def makeWXXs(self, Ws, XXs):
+    def makeWXXs(self, bestW, XXs):
         WXXs = []
-        if len(Ws) > 0:
-            bestW = max(Ws, key = lambda x: x.leg1.pt())
-            
-            if len(XXs) > 0:
-                sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
-                bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
-                bestWXX = WXX(bestW, bestXX)
-                bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
-                bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
-                bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
-                bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
-                WXXs.append(bestWXX)
+        if len(XXs) > 0:
+            sortedXXs = sorted(XXs, key = lambda x: (x.p4()+bestW.p4()).pt())[0:3]
+            bestXX = min(sortedXXs,  key = lambda x: deltaR(x.x1.leg1.eta(),x.x1.leg1.phi(),x.x1.leg2.eta(),x.x1.leg2.phi()) + deltaR(x.x2.leg1.eta(), x.x2.leg1.phi(), x.x2.leg2.eta(), x.x2.leg2.phi()))
+            bestWXX = WXX(bestW, bestXX)
+            bestWXX.deltaPhi_X1_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg1.phi())
+            bestWXX.deltaPhi_X1_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x1.leg2.phi())
+            bestWXX.deltaPhi_X2_g1 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg1.phi())
+            bestWXX.deltaPhi_X2_g2 = deltaPhi(bestW.leg1.phi(), bestXX.x2.leg2.phi())
+            WXXs.append(bestWXX)
         return WXXs
+
         
     def log(self, signal, genLeptons, genPhotons, recoLeptons, recoPhotons):
         for S in signal:
@@ -354,8 +332,8 @@ class VHGGBuilder(Analyzer):
         self.readCollections(event.input)
 
         pfCands = self.handles['packed'].product()
-        pfPhotons = filter(lambda x: x.pdgId()==22, pfCands)
-
+        pfPhotons = filter(lambda x: x.pdgId()==22 and x.pt() > 10, pfCands)
+        
         event.ZX=[]
         event.WX=[]
         event.ZXX = []
@@ -398,7 +376,16 @@ class VHGGBuilder(Analyzer):
                     break
             if not overlap:
                 loosePhotons.append(g)
-                
+        if self.cfg_comp.isMC:
+            for g in loosePhotons:
+                for gamma in genPhotons:
+                    if deltaR(gamma.eta(), gamma.phi(), g.eta(), g.phi()) < 0.1:
+                        g.mcMatch = 1
+                        if gamma.numberOfMothers() > 0:
+                            g.mcMotherId = gamma.mother().pdgId()
+                        continue
+            
+
         # Z to ee, used for photon misID cuts
         Zees = filter(lambda x: abs(x.leg1.pdgId())==11, self.makeZ(leptons))
 
@@ -408,49 +395,52 @@ class VHGGBuilder(Analyzer):
         XXs = self.makeXPair(goodPhotons)
         LooseXs = self.makeLooseX(loosePhotons)
         LooseXXs = self.makeLooseXPair(loosePhotons)
+
         # Make ZX/ZXX Pairs first
         if len(Zs) > 0:
+            bestZ = max(Zs, key = lambda x: x.leg1.pt() + x.leg2.pt())
 
-            ZXs = self.makeZXs(Zs, Xs)
+            ZXs = self.makeZXs(bestZ, Xs)
             for zx in ZXs:
                 zx.otherLeptons = len(leptons) - 2
                 event.ZX.append(zx)
             
-            ZXXs = self.makeZXXs(Zs, XXs)
+            ZXXs = self.makeZXXs(bestZ, XXs)
             for zxx in ZXXs:
                 zxx.otherLeptons = len(leptons) - 2
                 event.ZXX.append(zxx)
 
-            LooseZXs = self.makeLooseZXs(Zs, LooseXs)
+            LooseZXs = self.makeLooseZXs(bestZ, LooseXs)
             for zx in LooseZXs:
                 zx.otherLeptons = len(leptons) - 2
                 event.looseZX.append(zx)
 
-            LooseZXXs = self.makeLooseZXXs(Zs, LooseXXs)
+            LooseZXXs = self.makeLooseZXXs(bestZ, LooseXXs)
             for zxx in LooseZXXs:
                 zxx.otherLeptons = len(leptons) - 2
                 event.looseZXX.append(zxx)
 
         elif len(Ws) > 0:
-            WXs = self.makeWXs(Ws, Xs)
+            bestW = max(Ws, key = lambda x: x.leg1.pt())
+            WXs = self.makeWXs(bestW, Xs)
             for wx in WXs:
                 wx.otherLeptons = len(leptons) - 1
                 wx.hasZee = (len(Zees) > 0)
                 event.WX.append(wx)
             
-            WXXs = self.makeWXXs(Ws, XXs)
+            WXXs = self.makeWXXs(bestW, XXs)
             for wxx in WXXs:
                 wxx.otherLeptons = len(leptons) - 1
                 wxx.hasZee = (len(Zees) > 0)
                 event.WXX.append(wxx)
 
-            LooseWXs = self.makeLooseWXs(Ws, LooseXs)
+            LooseWXs = self.makeLooseWXs(bestW, LooseXs)
             for wx in LooseWXs:
                 wx.otherLeptons = len(leptons) - 1
                 wx.hasZee = (len(Zees) > 0)
                 event.looseWX.append(wx)
 
-            LooseWXXs = self.makeWXXs(Ws, LooseXXs)
+            LooseWXXs = self.makeWXXs(bestW, LooseXXs)
             for wxx in LooseWXXs:
                 wx.otherLeptons = len(leptons) - 1
                 wx.hasZee = (len(Zees) > 0)
