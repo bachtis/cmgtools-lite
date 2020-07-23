@@ -10,11 +10,7 @@ import commands
 
 
 from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
-selectedComponents = [dataSamplesLNuJ[0]]
-for c in selectedComponents:
-    c.files = c.files[:1]
-    c.splitFactor = 1
-
+selectedComponents = [dataSamples[0]]
 
 
 parser = optparse.OptionParser()
@@ -72,7 +68,7 @@ for component in selectedComponents:
             print "Submission  failed: %s" % (hte.headers)
             break;
         except ClientException as cle:
-            print "Submission for input dataset %s failed: %s" % (inDS, cle)
+            print "Submission for input dataset %s failed"
             break;
     if args[0]=='status':
         if os.path.isdir(options.prod+'/crab_'+component.name):
