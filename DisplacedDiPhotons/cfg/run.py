@@ -85,8 +85,6 @@ from CMGTools.DisplacedDiPhotons.analyzers.core_cff import *
 
 
 
-#selectedComponents = mcSamples
-selectedComponents = dataSamples
 
 
 
@@ -99,16 +97,6 @@ from CMGTools.DisplacedDiPhotons.analyzers.tree_cff import *
 
 sequence = cfg.Sequence(coreSequence+[vhGGTreeProducer])
 
-
-triggerFlagsAna.triggerBits ={
-    "ISOMU":triggers_1mu_iso,
-    "MU":triggers_1mu_noniso,
-    "ISOMUMU":triggers_mumu_iso,
-    "MUMU":triggers_1mu_noniso,
-    "ELE":triggers_1e_noniso,
-    "ISOELE":triggers_1e_iso,
-    "EE": triggers_ee
-}
 
 
 #-------- HOW TO RUN
@@ -129,7 +117,10 @@ if runCommand<0:
     selectedComponents[0].name="Output"
 else:
     from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
-    selectedComponents = mcSamples+dataSamplesLNUJ
+    ####
+    #selectedComponents = mcSamples
+    selectedComponents = dataSamples
+    ####
     if runCommand==1:
         selectedComponents = [selectedComponents[0]]
         for c in selectedComponents:

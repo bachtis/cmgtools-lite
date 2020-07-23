@@ -10,7 +10,11 @@ import commands
 
 
 from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
-selectedComponents = dataSamplesLNuJ
+selectedComponents = [dataSamplesLNuJ[0]]
+for c in selectedComponents:
+    c.files = c.files[:1]
+    c.splitFactor = 1
+
 
 
 parser = optparse.OptionParser()
