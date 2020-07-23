@@ -100,7 +100,6 @@ sequence = cfg.Sequence(coreSequence+[vhGGTreeProducer])
 
 
 #-------- HOW TO RUN
-#-------- HOW TO RUN
 #runCommand values
 #-1 -> CRAB
 # 0 -> Condor LPC
