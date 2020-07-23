@@ -114,7 +114,7 @@ class xVertex(object):
         v2.Rotate(theta, axis)
         radius = self.getRadius(v1[0], v2[0], v1[1], v2[1], phi)
         centers = self.getCenters(v1[0], v2[0], v1[1], v2[1], phi)
-        stepsPhi = 1000
+        stepsPhi = 200
         deltaPhi = 2*math.pi/stepsPhi
         points = []
         c = min(centers, key = lambda x: x[0]**2+x[1]**2)
