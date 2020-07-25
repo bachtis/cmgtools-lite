@@ -10,7 +10,7 @@ import commands
 
 
 from CMGTools.DisplacedDiPhotons.samples.loadSamples import *
-selectedComponents = [dataSamples[0]]
+selectedComponents = dataSamples
 
 
 parser = optparse.OptionParser()
