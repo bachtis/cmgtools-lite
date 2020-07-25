@@ -48,6 +48,8 @@ for component in selectedComponents:
         configu.Data.unitsPerJob = 6
     configu.Data.outLFNDirBase = '/store/user/'+options.username+'/'+options.prod
     configu.Data.publication = False
+    configu.Data.ignoreLocality =True
+    configu.Site.whitelist = ['T2_US_*']
     configu.Data.outputDatasetTag = component.name
     configu.Site.storageSite = 'T3_US_FNALLPC'
     if args[0]=='list':

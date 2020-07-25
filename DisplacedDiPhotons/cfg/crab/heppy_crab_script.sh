@@ -10,4 +10,5 @@ mv module $CMSSW_BASE/module
 mv python $CMSSW_BASE/python
 echo "Running of Heppy"
 python heppy_crab_script.py $1
+cmsRun -j FrameworkJobReport.xml -p PSet.py
 echo "============= END OF HEPPY CRAB SCRIPT ========================="
